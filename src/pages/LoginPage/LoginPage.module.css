@@ -82,6 +82,15 @@
   font: inherit;
   cursor: pointer;
 }
+.contenidoBoton {
+  display: grid;
+  place-items: center;
+  line-height: 24px;
+  min-height: 24px;
+}
+.contenidoBoton > * {
+  grid-area: 1 / 1;
+}
 
 .boton:hover:not(:disabled) {
   background: var(--color-accion-hover);
@@ -90,4 +99,36 @@
 .boton:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+.password {
+  position: relative;
+}
+.password input {
+  width: 100%;
+  padding-right: 52px;
+}
+.password input::-ms-reveal,
+.password input::-ms-clear {
+  display: none;
+}
+.verPassword {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 48px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radio);
+  background: transparent;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+.verPassword:hover {
+  color: var(--color-texto);
+}
+.verPassword:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: -4px;
 }

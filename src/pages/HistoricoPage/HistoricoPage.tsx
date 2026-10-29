@@ -1,12 +1,13 @@
 import { NoEncontrado } from '../../components/ui/NoEncontrado'
 import { lazy, Suspense, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { LIMITE_HISTORICO, obtenerHistorico } from '../../api/historico'
 import { useApi } from '../../hooks/useApi'
 import { useBreadcrumb } from '../../hooks/useBreadcrumb'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ErrorBlock } from '../../components/ui/ErrorBlock'
 import { Spinner } from '../../components/ui/Spinner'
+import { Skeleton } from '../../components/ui/Skeleton'
 import { formatFechaHora, formatValor } from '../../lib/formato'
 import type { FiltrosHistorico } from '../../types/historico'
 import type { Variable } from '../../types/comun'
@@ -37,6 +38,13 @@ function convertir(f: FiltrosHistorico): FiltrosHistorico {
 }
 export default function HistoricoPage() {
   const { deviceId = '' } = useParams()
+  const ubicacion = useLocation()
+  const previo = (
+    ubicacion.state as {
+      sensor?: { deviceId: string; nombre: string; area_id: string; area_nombre: string }
+    } | null
+  )?.sensor
+  const sensorPrevio = previo?.deviceId === deviceId ? previo : undefined
   const [formulario, setFormulario] = useState(iniciales)
   const [aplicado, setAplicado] = useState(() => convertir(formulario))
   const [validacion, setValidacion] = useState('')
@@ -45,11 +53,17 @@ export default function HistoricoPage() {
     [deviceId, aplicado],
   )
   const datos = resultado.datos
+  const nombreSensor = datos?.nombre ?? sensorPrevio?.nombre
+  const areaId = datos?.area_id ?? sensorPrevio?.area_id
+  const areaNombre = datos?.area_nombre ?? sensorPrevio?.area_nombre
   const nombre = VARIABLES.find((v) => v.valor === aplicado.variable)!.nombre
   useBreadcrumb([
     { etiqueta: 'Inicio', a: '/dashboard' },
-    { etiqueta: datos?.area_nombre, a: datos ? `/areas/${datos.area_id}` : undefined },
-    { etiqueta: datos?.nombre ?? deviceId, a: `/sensores/${encodeURIComponent(deviceId)}` },
+    {
+      etiqueta: areaNombre,
+      a: areaId ? `/areas/${encodeURIComponent(areaId)}` : undefined,
+    },
+    { etiqueta: nombreSensor, a: `/sensores/${encodeURIComponent(deviceId)}` },
     { etiqueta: 'Históricos' },
   ])
   function aplicar(event: React.SubmitEvent<HTMLFormElement>) {
@@ -73,7 +87,14 @@ export default function HistoricoPage() {
   return (
     <section className={styles.pagina}>
       <header className={styles.encabezado}>
-        <h1>Históricos · {datos?.nombre ?? deviceId}</h1>
+        <h1>
+          Históricos ·{' '}
+          {nombreSensor ?? (
+            <span className={styles.nombreCargando}>
+              <Skeleton ancho="8ch" alto="1.3em" />
+            </span>
+          )}
+        </h1>
         <Link to={`/sensores/${encodeURIComponent(deviceId)}`}>Volver al sensor</Link>
       </header>
       <form className={styles.filtros} onSubmit={aplicar} noValidate>
@@ -81,7 +102,9 @@ export default function HistoricoPage() {
           Variable
           <select
             value={formulario.variable}
-            onChange={(e) => setFormulario({ ...formulario, variable: e.target.value as Variable })}
+            onChange={(e) =>
+              setFormulario({ ...formulario, variable: e.target.value as Variable })
+            }
           >
             {VARIABLES.map((v) => (
               <option key={v.valor} value={v.valor}>
@@ -138,7 +161,8 @@ export default function HistoricoPage() {
             mensaje={'No se pudo cargar el histórico'}
             onReintentar={resultado.recargar}
           />
-        ) : datos && (datos.puntos.length === 0 || datos.puntos.every((p) => p.valor === null)) ? (
+        ) : datos &&
+          (datos.puntos.length === 0 || datos.puntos.every((p) => p.valor === null)) ? (
           <div className={styles.estado}>
             <EmptyState titulo="No hay datos para el período seleccionado" />
           </div>
@@ -147,8 +171,8 @@ export default function HistoricoPage() {
             <>
               {datos.truncado && (
                 <p role="status">
-                  Se muestran los primeros {LIMITE_HISTORICO} puntos. Reducí el período para ver
-                  todos los datos.
+                  Se muestran los primeros {LIMITE_HISTORICO} puntos. Reducí el período
+                  para ver todos los datos.
                 </p>
               )}
               <Suspense

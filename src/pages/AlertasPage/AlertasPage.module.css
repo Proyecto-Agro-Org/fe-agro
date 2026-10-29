@@ -5,6 +5,7 @@
   min-width: 0;
 }
 .titulo {
+  line-height: 1.3;
   margin: 0;
   font-size: var(--texto-titulo);
 }
@@ -19,6 +20,7 @@
   background: var(--color-superficie);
 }
 .campo {
+  line-height: 1.5;
   display: flex;
   flex: 1 1 140px;
   flex-direction: column;
@@ -57,6 +59,8 @@
 }
 .tabla {
   width: 100%;
+  min-width: 1000px;
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0 var(--espacio-2);
   text-align: left;
@@ -64,6 +68,7 @@
   line-height: normal;
 }
 .tabla th {
+  line-height: 20px;
   padding: 0 var(--espacio-3);
   color: var(--color-texto-suave);
   font-size: var(--texto-xs);
@@ -71,6 +76,7 @@
   white-space: nowrap;
 }
 .tabla td {
+  height: 64px;
   padding: var(--espacio-3);
   background: var(--color-superficie-2);
   vertical-align: middle;
@@ -104,7 +110,36 @@
   text-decoration: underline;
 }
 .descripcion {
-  min-width: 220px;
+  overflow-wrap: anywhere;
+}
+.resultados {
+  min-width: 0;
+}
+.colSeveridad {
+  width: 96px;
+}
+.colSensor {
+  width: 110px;
+}
+.colArea {
+  width: 120px;
+}
+.colTipo {
+  width: 110px;
+}
+.colFecha {
+  width: 140px;
+}
+.colEstado {
+  width: 80px;
+}
+.soloLectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .fecha {
   font-variant-numeric: tabular-nums;
@@ -145,7 +180,7 @@
     min-width: 0;
   }
   .tabla {
-    min-width: 900px;
+    min-width: 1000px;
   }
   .tablaContenedor {
     padding: var(--espacio-3);

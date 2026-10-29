@@ -12,6 +12,7 @@ export default function LoginPage() {
   const { iniciarSesion, sesionExpirada } = useAuth()
   const [usuario, setUsuario] = useState('')
   const [password, setPassword] = useState('')
+  const [mostrarPassword, setMostrarPassword] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<ErrorLogin>(null)
 
@@ -64,17 +65,43 @@ export default function LoginPage() {
           />
         </label>
 
-        <label className={styles.campo}>
-          <span>Contraseña</span>
-          <input
-            type="password"
-            name="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(evento) => setPassword(evento.target.value)}
-          />
-        </label>
+        <div className={styles.campo}>
+          <label htmlFor="password">Contraseña</label>
+          <div className={styles.password}>
+            <input
+              id="password"
+              type={mostrarPassword ? 'text' : 'password'}
+              name="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(evento) => setPassword(evento.target.value)}
+            />
+            <button
+              type="button"
+              className={styles.verPassword}
+              aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              aria-controls="password"
+              onClick={() => setMostrarPassword((visible) => !visible)}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                <circle cx="12" cy="12" r="3" />
+                {!mostrarPassword && <path d="m3 3 18 18" />}
+              </svg>
+            </button>
+          </div>
+        </div>
 
         {error === 'credenciales' && (
           <p className={styles.error} role="alert">
@@ -89,7 +116,10 @@ export default function LoginPage() {
         )}
 
         <button type="submit" className={styles.boton} disabled={enviando}>
-          {enviando ? <Spinner etiqueta="Ingresando…" /> : 'Ingresar'}
+          <span className={styles.contenidoBoton}>
+            <span style={{ visibility: enviando ? 'hidden' : 'visible' }} aria-hidden={enviando}>Ingresar</span>
+            {enviando && <Spinner etiqueta="Ingresando…" />}
+          </span>
         </button>
       </form>
     </main>

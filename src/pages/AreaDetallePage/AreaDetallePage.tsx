@@ -16,7 +16,9 @@ export default function AreaDetallePage() {
   useBreadcrumb([
     { etiqueta: 'Inicio', a: '/dashboard' },
     {
-      etiqueta: area.datos?.nombre ?? (area.estado === 'error' ? 'Área no disponible' : undefined),
+      etiqueta:
+        area.datos?.nombre ??
+        (area.estado === 'error' ? 'Área no disponible' : undefined),
     },
   ])
   if (area.error?.estado === 404) return <NoEncontrado />
@@ -29,7 +31,9 @@ export default function AreaDetallePage() {
           </>
         ) : area.estado === 'cargando' ? (
           <div role="status" aria-label="Cargando área">
-            <Skeleton alto="2rem" />
+            <h1>
+              <Skeleton ancho="18rem" alto="1.3em" />
+            </h1>
           </div>
         ) : (
           <h1>Área no disponible</h1>
@@ -39,7 +43,10 @@ export default function AreaDetallePage() {
         <ErrorBlock mensaje={'No se pudo cargar el área'} onReintentar={area.recargar} />
       )}
       {area.error?.estado !== 404 && (
-        <section aria-labelledby="titulo-sensores" aria-busy={listado.estado === 'cargando'}>
+        <section
+          aria-labelledby="titulo-sensores"
+          aria-busy={listado.estado === 'cargando'}
+        >
           <h2 id="titulo-sensores" className={styles.soloLectores}>
             Sensores del área
           </h2>
@@ -49,10 +56,31 @@ export default function AreaDetallePage() {
               onReintentar={listado.recargar}
             />
           )}
-          {listado.desactualizado && <p role="status">Los datos pueden estar desactualizados.</p>}
+          {listado.desactualizado && (
+            <p role="status">Los datos pueden estar desactualizados.</p>
+          )}
           {listado.estado === 'cargando' && !listado.datos && (
             <div role="status" aria-label="Cargando sensores">
-              <Skeleton lineas={4} alto="5rem" />
+              <ul className={styles.lista} aria-hidden="true">
+                {[1, 2, 3, 4].map((fila) => (
+                  <li key={fila} className={styles.sensor}>
+                    <div className={styles.informacion}>
+                      <span className={styles.nombre}>
+                        <Skeleton ancho="9rem" alto="1em" />
+                      </span>
+                      <span className={styles.resumen}>
+                        <Skeleton ancho="24rem" alto="1em" />
+                      </span>
+                      <span className={styles.resumen}>
+                        <Skeleton ancho="8rem" alto="1em" />
+                      </span>
+                    </div>
+                    <span className={styles.estado}>
+                      <Skeleton ancho="102px" alto="24px" />
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
           {listado.datos?.sensores.length === 0 && (

@@ -30,7 +30,8 @@ export default function SensorDetallePage() {
     },
     {
       etiqueta:
-        sensor?.nombre ?? (resultado.estado === 'error' ? 'Sensor no disponible' : undefined),
+        sensor?.nombre ??
+        (resultado.estado === 'error' ? 'Sensor no disponible' : undefined),
     },
   ])
   if (resultado.error?.estado === 404) return <NoEncontrado />
@@ -42,21 +43,59 @@ export default function SensorDetallePage() {
     >
       {resultado.estado === 'cargando' && !sensor && (
         <div role="status" aria-label="Cargando sensor">
-          <Skeleton alto="2rem" />
-          <div className={styles.medidas}>
+          <header className={styles.encabezado}>
+            <div className={styles.titulo}>
+              <div className={styles.fila}>
+                <h1>
+                  <Skeleton ancho="12rem" alto="1.3em" />
+                </h1>
+                <Skeleton ancho="6rem" alto="24px" />
+              </div>
+              <span className={styles.historico}>Ver históricos</span>
+            </div>
+            <dl className={styles.informacion}>
+              {['Identificador', 'Área', 'Ubicación', 'Última comunicación'].map(
+                (campo) => (
+                  <div key={campo}>
+                    <dt>{campo}</dt>
+                    <dd>
+                      <Skeleton
+                        ancho={campo === 'Última comunicación' ? '18rem' : '10rem'}
+                        alto="1.5em"
+                      />
+                    </dd>
+                  </div>
+                ),
+              )}
+            </dl>
+          </header>
+          <p className={styles.fecha}>
+            <Skeleton ancho="16rem" alto="1.5em" />
+          </p>
+          <dl className={styles.medidas}>
             {VARIABLES.map((v) => (
-              <Skeleton key={v.clave} alto="6rem" />
+              <div className={styles.tarjeta} key={v.clave}>
+                <dt>{v.nombre}</dt>
+                <dd>
+                  <Skeleton ancho="5rem" alto="1em" />
+                </dd>
+              </div>
             ))}
-          </div>
+          </dl>
         </div>
       )}
       {resultado.estado === 'error' && (
         <>
           {!sensor && <h1>Sensor no disponible</h1>}
-          <ErrorBlock mensaje={'No se pudo cargar el sensor'} onReintentar={resultado.recargar} />
+          <ErrorBlock
+            mensaje={'No se pudo cargar el sensor'}
+            onReintentar={resultado.recargar}
+          />
         </>
       )}
-      {resultado.desactualizado && <p role="status">Los datos pueden estar desactualizados.</p>}
+      {resultado.desactualizado && (
+        <p role="status">Los datos pueden estar desactualizados.</p>
+      )}
       {sensor && (
         <>
           <header className={styles.encabezado}>
@@ -68,6 +107,14 @@ export default function SensorDetallePage() {
               <Link
                 className={styles.historico}
                 to={`/sensores/${encodeURIComponent(sensor.device_id)}/historico`}
+                state={{
+                  sensor: {
+                    deviceId: sensor.device_id,
+                    nombre: sensor.nombre,
+                    area_id: sensor.area_id,
+                    area_nombre: sensor.area_nombre,
+                  },
+                }}
               >
                 Ver históricos
               </Link>

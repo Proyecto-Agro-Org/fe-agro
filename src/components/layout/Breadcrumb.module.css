@@ -1,4 +1,6 @@
 .migas {
+  line-height: 20px;
+  min-height: 20px;
   margin-bottom: var(--espacio-4);
   font-size: var(--texto-xs);
   color: var(--color-texto-suave);
@@ -17,6 +19,11 @@
 .item + .item::before {
   content: '›';
   margin-right: var(--espacio-2);
+}
+.item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
 }
 
 .item a {
@@ -38,6 +45,7 @@
 }
 
 .cargando {
+  line-height: 0;
   display: inline-block;
   width: 8rem;
 }

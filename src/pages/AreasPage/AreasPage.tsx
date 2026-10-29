@@ -9,42 +9,77 @@ import { cantidad, formatFechaHora } from '../../lib/formato'
 import type { AreaResumen, AreasRespuesta } from '../../types/areas'
 import styles from './AreasPage.module.css'
 
-function TarjetaArea({ area }: { area: AreaResumen }) {
-  const conAlerta = area.alertas_activas > 0
+function TarjetaArea({ area }: { area?: AreaResumen }) {
+  const conAlerta = (area?.alertas_activas ?? 0) > 0
+  const contenido = (
+    <>
+      <span className={styles.informacion}>
+        <span className={styles.nombre}>
+          {area ? area.nombre : <Skeleton ancho="10rem" alto="1.3em" />}
+        </span>
+        <span className={styles.resumen}>
+          {area ? (
+            <>
+              {cantidad(area.sensores, 'sensor', 'sensores')} ·{' '}
+              {cantidad(area.conectados, 'conectado', 'conectados')} ·{' '}
+              {cantidad(area.desconectados, 'desconectado', 'desconectados')}
+            </>
+          ) : (
+            <Skeleton ancho="20rem" alto="1.4em" />
+          )}
+        </span>
+        <span className={styles.suave}>
+          {area ? (
+            <>
+              Última actualización:{' '}
+              {area.ultima_actualizacion ? (
+                <time
+                  dateTime={area.ultima_actualizacion}
+                  title={formatFechaHora(area.ultima_actualizacion)}
+                >
+                  {new Date(area.ultima_actualizacion).toDateString() ===
+                  new Date().toDateString()
+                    ? `hoy ${new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(area.ultima_actualizacion))}`
+                    : formatFechaHora(area.ultima_actualizacion)}
+                </time>
+              ) : (
+                'Sin datos'
+              )}
+            </>
+          ) : (
+            <Skeleton ancho="13rem" alto="1.4em" />
+          )}
+        </span>
+      </span>
+      <span
+        className={`${styles.badgeAlerta} ${area ? (conAlerta ? styles.conAlertas : styles.sinAlertas) : ''}`}
+      >
+        {area ? (
+          conAlerta ? (
+            cantidad(area.alertas_activas, 'alerta activa', 'alertas activas')
+          ) : (
+            'Sin alertas'
+          )
+        ) : (
+          <Skeleton alto="24px" />
+        )}
+      </span>
+    </>
+  )
   return (
     <li>
-      <Link to={`/areas/${encodeURIComponent(area.area_id)}`} className={styles.tarjeta}>
-        <span className={styles.informacion}>
-          <span className={styles.nombre}>{area.nombre}</span>
-          <span className={styles.resumen}>
-            {cantidad(area.sensores, 'sensor', 'sensores')} ·{' '}
-            {cantidad(area.conectados, 'conectado', 'conectados')} ·{' '}
-            {cantidad(area.desconectados, 'desconectado', 'desconectados')}
-          </span>
-          <span className={styles.suave}>
-            Última actualización:{' '}
-            {area.ultima_actualizacion ? (
-              <time
-                dateTime={area.ultima_actualizacion}
-                title={formatFechaHora(area.ultima_actualizacion)}
-              >
-                {new Date(area.ultima_actualizacion).toDateString() === new Date().toDateString()
-                  ? `hoy ${new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(area.ultima_actualizacion))}`
-                  : formatFechaHora(area.ultima_actualizacion)}
-              </time>
-            ) : (
-              'Sin datos'
-            )}
-          </span>
-        </span>
-        <span
-          className={`${styles.badgeAlerta} ${conAlerta ? styles.conAlertas : styles.sinAlertas}`}
+      {area ? (
+        <Link
+          to={`/areas/${encodeURIComponent(area.area_id)}`}
+          className={styles.tarjeta}
         >
-          {conAlerta
-            ? cantidad(area.alertas_activas, 'alerta activa', 'alertas activas')
-            : 'Sin alertas'}
-        </span>
-      </Link>
+          {contenido}
+        </Link>
+      ) : (
+        <div className={styles.tarjeta} aria-hidden="true">
+          {contenido}
+        </div>
+      )}
     </li>
   )
 }
@@ -54,9 +89,7 @@ function CargandoAreas() {
     <div role="status" aria-label="Cargando áreas">
       <ul className={styles.lista}>
         {[1, 2, 3, 4].map((numero) => (
-          <li key={numero} className={styles.tarjeta}>
-            <Skeleton lineas={3} />
-          </li>
+          <TarjetaArea key={numero} />
         ))}
       </ul>
     </div>
@@ -74,7 +107,10 @@ export default function AreasPage() {
   if (datos === null) {
     contenido =
       estado === 'error' ? (
-        <ErrorBlock mensaje="No se pudo cargar el listado de áreas." onReintentar={recargar} />
+        <ErrorBlock
+          mensaje="No se pudo cargar el listado de áreas."
+          onReintentar={recargar}
+        />
       ) : (
         <CargandoAreas />
       )
@@ -102,16 +138,14 @@ export default function AreasPage() {
     <section className={styles.pagina}>
       <header className={styles.cabecera}>
         <h1 className={styles.titulo}>Áreas</h1>
-        {datos !== null && (
-          <button
-            type="button"
-            className={styles.actualizar}
-            onClick={recargar}
-            disabled={estado === 'cargando'}
-          >
-            {estado === 'cargando' ? 'Actualizando…' : 'Actualizar'}
-          </button>
-        )}
+        <button
+          type="button"
+          className={styles.actualizar}
+          onClick={recargar}
+          disabled={estado === 'cargando' || datos === null}
+        >
+          Actualizar
+        </button>
       </header>
       {desactualizado && (
         <ErrorBlock

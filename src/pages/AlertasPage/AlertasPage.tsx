@@ -36,7 +36,10 @@ function ItemAlerta({ alerta }: { alerta: Alerta }) {
         <SeverityBadge severidad={alerta.severidad} />
       </td>
       <td>
-        <Link to={`/sensores/${encodeURIComponent(alerta.device_id)}`} className={styles.sensor}>
+        <Link
+          to={`/sensores/${encodeURIComponent(alerta.device_id)}`}
+          className={styles.sensor}
+        >
           {alerta.sensor_nombre}
         </Link>
       </td>
@@ -67,10 +70,77 @@ function ItemAlerta({ alerta }: { alerta: Alerta }) {
   )
 }
 
-function CargandoAlertas() {
+function TablaAlertas({
+  alertas,
+  cargando = false,
+}: {
+  alertas: Alerta[]
+  cargando?: boolean
+}) {
   return (
-    <div role="status" aria-label="Cargando alertas">
-      <Skeleton lineas={4} alto="4rem" />
+    <div className={styles.resultados}>
+      {cargando && (
+        <span className={styles.soloLectores} role="status" aria-label="Cargando alertas">
+          Cargando alertas
+        </span>
+      )}
+      <div
+        className={styles.tablaContenedor}
+        role="region"
+        aria-label="Resultados de alertas"
+        tabIndex={0}
+        aria-busy={cargando}
+      >
+        <table className={styles.tabla} aria-label="Alertas">
+          <colgroup>
+            <col className={styles.colSeveridad} />
+            <col className={styles.colSensor} />
+            <col className={styles.colArea} />
+            <col className={styles.colTipo} />
+            <col />
+            <col className={styles.colFecha} />
+            <col className={styles.colEstado} />
+          </colgroup>
+          <thead>
+            <tr>
+              {[
+                'Severidad',
+                'Sensor',
+                'Área',
+                'Tipo',
+                'Descripción',
+                'Fecha / hora',
+                'Estado',
+              ].map((titulo) => (
+                <th key={titulo} scope="col">
+                  {titulo}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {cargando
+              ? [1, 2, 3, 4, 5].map((fila) => (
+                  <tr key={fila} aria-hidden="true">
+                    {[1, 2, 3, 4, 5, 6, 7].map((columna) => (
+                      <td
+                        key={columna}
+                        className={columna === 5 ? styles.descripcion : undefined}
+                      >
+                        <Skeleton
+                          alto="19px"
+                          ancho={columna === 1 ? '49px' : columna === 7 ? '3rem' : '100%'}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              : alertas.map((alerta) => (
+                  <ItemAlerta key={alerta.alerta_id} alerta={alerta} />
+                ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -82,7 +152,8 @@ export default function AlertasPage() {
     setFiltros(SIN_FILTROS)
     setAplicados(SIN_FILTROS)
   }
-  const hayFiltros = aplicados.area_id !== '' || aplicados.tipo !== '' || aplicados.severidad !== ''
+  const hayFiltros =
+    aplicados.area_id !== '' || aplicados.tipo !== '' || aplicados.severidad !== ''
 
   // Solo alimenta el desplegable: si falla, la lista de alertas sigue funcionando.
   const {
@@ -109,17 +180,21 @@ export default function AlertasPage() {
 
   let contenido
   if (estado === 'cargando') {
-    contenido = <CargandoAlertas />
+    contenido = <TablaAlertas alertas={[]} cargando />
   } else if (estado === 'error' || datos === null) {
     // Los filtros viven en este componente, así que siguen aplicados al reintentar.
-    contenido = <ErrorBlock mensaje="No se pudieron cargar las alertas." onReintentar={recargar} />
+    contenido = (
+      <ErrorBlock mensaje="No se pudieron cargar las alertas." onReintentar={recargar} />
+    )
   } else if (datos.alertas.length === 0) {
     contenido = (
       <div>
         <EmptyState
           icono="✓"
           titulo={
-            hayFiltros ? 'No hay alertas activas con estos filtros' : 'No hay alertas activas'
+            hayFiltros
+              ? 'No hay alertas activas con estos filtros'
+              : 'No hay alertas activas'
           }
           descripcion={hayFiltros ? undefined : 'No se registran alertas activas.'}
         />
@@ -130,35 +205,11 @@ export default function AlertasPage() {
       <>
         {datos.total > datos.alertas.length && (
           <p className={styles.contador}>
-            Mostrando {datos.alertas.length} de {datos.total} alertas activas. Acotá con los filtros
-            para ver el resto.
+            Mostrando {datos.alertas.length} de {datos.total} alertas activas. Acotá con
+            los filtros para ver el resto.
           </p>
         )}
-        <div
-          className={styles.tablaContenedor}
-          role="region"
-          aria-label="Resultados de alertas"
-          tabIndex={0}
-        >
-          <table className={styles.tabla} aria-label="Alertas">
-            <thead>
-              <tr>
-                <th scope="col">Severidad</th>
-                <th scope="col">Sensor</th>
-                <th scope="col">Área</th>
-                <th scope="col">Tipo</th>
-                <th scope="col">Descripción</th>
-                <th scope="col">Fecha / hora</th>
-                <th scope="col">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {datos.alertas.map((alerta) => (
-                <ItemAlerta key={alerta.alerta_id} alerta={alerta} />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <TablaAlertas alertas={datos.alertas} />
       </>
     )
   }
@@ -169,7 +220,8 @@ export default function AlertasPage() {
       {estadoAreas === 'error' && (
         <div>
           <p role="status">
-            No se pudieron cargar las áreas del filtro. Podés seguir consultando las alertas.
+            No se pudieron cargar las áreas del filtro. Podés seguir consultando las
+            alertas.
           </p>
           <button type="button" className={styles.limpiar} onClick={recargarAreas}>
             Reintentar áreas
@@ -187,7 +239,9 @@ export default function AlertasPage() {
           Área
           <select
             value={filtros.area_id}
-            onChange={(evento) => setFiltros({ ...filtros, area_id: evento.target.value })}
+            onChange={(evento) =>
+              setFiltros({ ...filtros, area_id: evento.target.value })
+            }
           >
             <option value="">Todas</option>
             {(areas?.areas ?? []).map((area) => (
@@ -203,7 +257,10 @@ export default function AlertasPage() {
           <select
             value={filtros.tipo}
             onChange={(evento) =>
-              setFiltros({ ...filtros, tipo: evento.target.value as Filtros['tipo'] })
+              setFiltros({
+                ...filtros,
+                tipo: evento.target.value as Filtros['tipo'],
+              })
             }
           >
             <option value="">Todos</option>
@@ -213,18 +270,14 @@ export default function AlertasPage() {
         </label>
 
         <label className={styles.campo}>
-          Estado
-          <select value="activa" disabled title="En esta etapa se consultan las alertas activas">
-            <option value="activa">Activas</option>
-          </select>
-        </label>
-
-        <label className={styles.campo}>
           Severidad
           <select
             value={filtros.severidad}
             onChange={(evento) =>
-              setFiltros({ ...filtros, severidad: evento.target.value as Filtros['severidad'] })
+              setFiltros({
+                ...filtros,
+                severidad: evento.target.value as Filtros['severidad'],
+              })
             }
           >
             <option value="">Todas</option>

@@ -13,6 +13,7 @@
 }
 
 .titulo {
+  line-height: 1.3;
   margin: 0;
   font-size: var(--texto-titulo);
 }
@@ -73,16 +74,19 @@ a.tarjeta:hover {
 }
 
 .informacion {
+  flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
 .resumen {
+  line-height: 1.4;
   font-size: var(--texto-detalle);
 }
 
 .nombre {
+  line-height: 1.3;
   font-size: var(--texto-lg);
   font-weight: 400;
   margin-bottom: 6px;
@@ -114,11 +118,19 @@ a.tarjeta:hover {
 }
 
 .suave {
+  line-height: 1.4;
   color: var(--color-texto-suave);
   font-size: var(--texto-detalle);
 }
 
 @media (max-width: 600px) {
+  .informacion {
+    flex-basis: 100%;
+    width: 100%;
+  }
+  .resumen {
+    min-height: 2.8em;
+  }
   .tarjeta {
     flex-wrap: wrap;
     gap: var(--espacio-3);

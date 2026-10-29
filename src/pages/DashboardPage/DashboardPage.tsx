@@ -54,7 +54,9 @@ function ItemArea({ area }: { area: AreaDashboard }) {
         <span
           className={`${styles.estadoArea} ${conAlerta ? styles.conAlertas : styles.sinAlertasArea}`}
         >
-          {conAlerta ? cantidad(area.alertas_activas, 'alerta', 'alertas') : 'Sin alertas'}
+          {conAlerta
+            ? cantidad(area.alertas_activas, 'alerta', 'alertas')
+            : 'Sin alertas'}
         </span>
       </td>
     </tr>
@@ -63,16 +65,64 @@ function ItemArea({ area }: { area: AreaDashboard }) {
 
 function CargandoDashboard() {
   return (
-    <div role="status" aria-label="Cargando el resumen">
+    <div className={styles.carga} role="status" aria-label="Cargando el resumen">
       <ul className={styles.metricas}>
         {[1, 2, 3, 4].map((numero) => (
           <li key={numero} className={styles.metrica}>
-            <Skeleton alto="2.5rem" />
+            <span className={styles.metricaTitulo}>
+              <Skeleton ancho="8rem" alto="1em" />
+            </span>
+            <span className={styles.metricaValor}>
+              <Skeleton ancho="4rem" alto="1em" />
+            </span>
           </li>
         ))}
       </ul>
-      <div className={styles.bloque}>
-        <Skeleton lineas={4} alto="3rem" />
+      <div className={styles.paneles}>
+        <section className={styles.bloque}>
+          <h2 className={styles.subtitulo}>Áreas</h2>
+          <div className={styles.tablaContenedor}>
+            <table className={styles.tablaAreas} aria-hidden="true">
+              <thead>
+                <tr>
+                  {['Área', 'Sensores', 'Conectados', 'Estado'].map((titulo) => (
+                    <th key={titulo}>{titulo}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[1, 2, 3, 4].map((fila) => (
+                  <tr key={fila}>
+                    {[1, 2, 3, 4].map((columna) => (
+                      <td key={columna}>
+                        <Skeleton alto="19px" />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section className={styles.bloque}>
+          <h2 className={styles.subtitulo}>Últimas alertas</h2>
+          <ul className={styles.listaAlertas} aria-hidden="true">
+            {[1, 2, 3, 4].map((fila) => (
+              <li key={fila}>
+                <div className={styles.alerta}>
+                  <Skeleton ancho="49px" alto="19px" />
+                  <div className={styles.alertaTexto}>
+                    <Skeleton lineas={2} alto="12px" />
+                  </div>
+                  <Skeleton ancho="4rem" alto="12px" />
+                </div>
+              </li>
+            ))}
+          </ul>
+          <span className={styles.verTodas}>
+            <Skeleton ancho="8rem" alto="1em" />
+          </span>
+        </section>
       </div>
     </div>
   )
@@ -91,7 +141,9 @@ export default function DashboardPage() {
     contenido = <CargandoDashboard />
   } else if (estado === 'error' || datos === null) {
     // Sin datos parciales: o se ve todo el resumen o se ve el error.
-    contenido = <ErrorBlock mensaje="No se pudo cargar el resumen." onReintentar={recargar} />
+    contenido = (
+      <ErrorBlock mensaje="No se pudo cargar el resumen." onReintentar={recargar} />
+    )
   } else if (datos.resumen.areas === 0) {
     contenido = (
       <EmptyState
@@ -158,8 +210,13 @@ export default function DashboardPage() {
                     >
                       <SeverityBadge severidad={alerta.severidad} />
                       <div className={styles.alertaTexto}>
-                        <strong className={styles.sensorNombre}>{alerta.sensor_nombre}</strong>
-                        <span className={styles.alertaDescripcion} title={alerta.descripcion}>
+                        <strong className={styles.sensorNombre}>
+                          {alerta.sensor_nombre}
+                        </strong>
+                        <span
+                          className={styles.alertaDescripcion}
+                          title={alerta.descripcion}
+                        >
                           {alerta.descripcion}
                         </span>
                         {alerta.estado === 'resuelta' && (
