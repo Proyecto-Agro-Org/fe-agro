@@ -1,0 +1,150 @@
+.pagina {
+  max-width: 1200px;
+  min-width: 0;
+}
+.pagina h1 {
+  font-size: var(--texto-titulo);
+  margin: 0 0 20px;
+}
+.pagina h2 {
+  font-size: var(--texto-sm);
+}
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.filtros label {
+  display: grid;
+  gap: 6px;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+}
+.filtros select {
+  padding: 9px 12px;
+  color-scheme: dark;
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+}
+.leyenda {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  align-self: center;
+}
+.contenedorMapa {
+  position: relative;
+  border: 1px solid var(--color-borde);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-superficie);
+}
+.mapa {
+  height: 440px;
+  width: 100%;
+  z-index: 0;
+  background: var(--color-mapa-fondo);
+}
+.cargaBase {
+  height: 440px;
+  display: grid;
+  place-items: center;
+}
+.superpuesto {
+  position: absolute;
+  z-index: 500;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 16px;
+  width: min(90%, 480px);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--color-fondo) 25%, transparent);
+}
+.pinConectado,
+.pinDesconectado {
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--color-texto);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--color-fondo) 50%, transparent);
+  color: var(--color-texto);
+  font: bold var(--texto-lg)/1 system-ui;
+}
+.pinConectado {
+  background: var(--color-pin-ok);
+}
+.pinDesconectado {
+  background: var(--color-pin-peligro);
+}
+.resumen {
+  display: grid;
+  gap: 8px;
+  min-width: 180px;
+  font: var(--texto-sm)/1.4 system-ui;
+}
+.resumen strong {
+  font-size: var(--texto-sm);
+}
+.contador,
+.avisoTiles {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+.avisoTiles {
+  padding: 12px;
+  margin: 0;
+}
+.lista {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.lista li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 102px;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  border: 1px solid var(--color-borde);
+  background: var(--color-superficie);
+  padding: 12px;
+  border-radius: 8px;
+}
+.lista li > a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.lista li > span {
+  inline-size: 102px;
+  min-block-size: 24px;
+  padding: 0 var(--espacio-2);
+}
+.pagina summary {
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .leyenda {
+    margin-left: 0;
+  }
+  .mapa,
+  .cargaBase {
+    height: 360px;
+  }
+}
+
+.mapa :global(.leaflet-popup-content-wrapper),
+.mapa :global(.leaflet-popup-tip) {
+  background: var(--color-superficie);
+  color: var(--color-texto);
+}
+.mapa :global(.leaflet-popup-content a) {
+  color: var(--color-acento);
+}

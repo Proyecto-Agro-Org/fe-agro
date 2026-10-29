@@ -1,0 +1,153 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-5);
+  min-width: 0;
+}
+.titulo {
+  margin: 0;
+  font-size: var(--texto-titulo);
+}
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espacio-4);
+  padding: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: calc(var(--radio) * 2);
+  background: var(--color-superficie);
+}
+.campo {
+  display: flex;
+  flex: 1 1 140px;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  max-width: 200px;
+  font-size: var(--texto-xs);
+  color: var(--color-texto-suave);
+}
+.campo select {
+  width: 100%;
+  min-height: 38px;
+  padding: var(--espacio-2) var(--espacio-3);
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  font: inherit;
+  font-size: var(--texto-sm);
+}
+.campo select:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.contador {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+}
+.tablaContenedor {
+  min-width: 0;
+  overflow-x: auto;
+  padding: 20px;
+  border: 1px solid var(--color-borde);
+  border-radius: calc(var(--radio) * 2);
+  background: var(--color-superficie);
+}
+.tabla {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 var(--espacio-2);
+  text-align: left;
+  font-size: var(--texto-detalle);
+  line-height: normal;
+}
+.tabla th {
+  padding: 0 var(--espacio-3);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: 400;
+  white-space: nowrap;
+}
+.tabla td {
+  padding: var(--espacio-3);
+  background: var(--color-superficie-2);
+  vertical-align: middle;
+}
+.tabla td:first-child {
+  border-radius: var(--radio) 0 0 var(--radio);
+}
+.tabla td:last-child {
+  border-radius: 0 var(--radio) var(--radio) 0;
+}
+.tabla tbody tr:hover td,
+.tabla tbody tr:focus-within td {
+  background: color-mix(in srgb, var(--color-texto) 5%, var(--color-superficie-2));
+}
+.severidad > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 49px;
+  min-block-size: 19px;
+  padding: 3px var(--espacio-2);
+  border: 0;
+}
+.sensor {
+  color: var(--color-texto);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sensor:hover {
+  text-decoration: underline;
+}
+.descripcion {
+  min-width: 220px;
+}
+.fecha {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.activa {
+  color: var(--color-ok);
+}
+.resuelta {
+  color: var(--color-texto-suave);
+}
+.limpiar,
+.aplicar {
+  min-height: 38px;
+  padding: var(--espacio-2) var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: var(--texto-sm);
+  cursor: pointer;
+}
+.limpiar:hover {
+  background: var(--color-superficie-2);
+}
+.aplicar {
+  background: var(--color-accion);
+  border-color: var(--color-accion-borde);
+}
+.aplicar:hover {
+  background: var(--color-accion-hover);
+}
+@media (max-width: 600px) {
+  .campo {
+    max-width: none;
+    flex-basis: calc(50% - var(--espacio-4));
+    min-width: 0;
+  }
+  .tabla {
+    min-width: 900px;
+  }
+  .tablaContenedor {
+    padding: var(--espacio-3);
+  }
+}

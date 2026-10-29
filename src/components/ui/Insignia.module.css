@@ -1,0 +1,27 @@
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 19px;
+  padding: 3px var(--espacio-2);
+  border-radius: 10px;
+  font-size: var(--texto-badge);
+  font-weight: 600;
+  line-height: 13px;
+  white-space: nowrap;
+}
+
+.ok {
+  color: var(--color-ok);
+  background: color-mix(in srgb, var(--color-ok) 15%, transparent);
+}
+
+.advertencia {
+  color: var(--color-advertencia);
+  background: color-mix(in srgb, var(--color-advertencia) 15%, transparent);
+}
+
+.peligro {
+  color: var(--color-peligro);
+  background: color-mix(in srgb, var(--color-peligro) 15%, transparent);
+}

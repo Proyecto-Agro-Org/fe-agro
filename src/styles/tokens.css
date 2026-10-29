@@ -1,0 +1,55 @@
+:root {
+  /* Fondos y texto (tema oscuro) */
+  --color-fondo: #232323;
+  --color-menu: #131313;
+  --color-menu-activo: #24382a;
+  --color-menu-activo-borde: #3e7b44;
+  --color-menu-alerta: #b21a1a;
+  --color-texto-inactivo: #6b6b6b;
+  --color-superficie: #2c2c2c;
+  --color-superficie-2: #333333;
+  --color-borde: #3b3b3b;
+  --color-texto: #f5f5f5;
+  --color-texto-suave: #a3a3a3;
+  --color-acento: #78c486;
+  --color-foco: #7dd3fc;
+
+  /* Estado y severidad: verde = conectado / baja, ámbar = media, rojo = desconectado / alta */
+  --color-ok: #78c486;
+  --color-advertencia: #fbbf24;
+  --color-peligro: #f87171;
+
+  /* Acciones primarias (botones) */
+  --color-accion: #203b27;
+  --color-accion-borde: #347c40;
+  --color-accion-hover: #2a4c32;
+
+  /* Pines y fondo del mapa */
+  --color-pin-ok: #347c40;
+  --color-pin-peligro: #b84242;
+  --color-mapa-fondo: #353c35;
+
+  /* Espaciado */
+  --espacio-1: 4px;
+  --espacio-2: 8px;
+  --espacio-3: 12px;
+  --espacio-4: 16px;
+  --espacio-5: 24px;
+  --espacio-6: 32px;
+
+  /* Tipografía */
+  --fuente-base: 'SF Pro Text', 'SF Pro', 'SF Pro Display', -apple-system, BlinkMacSystemFont,
+    'Inter', 'Segoe UI', Roboto, sans-serif;
+  --texto-badge: 0.6875rem;
+  --texto-xs: 0.75rem;
+  --texto-sm: 0.875rem;
+  --texto-detalle: 0.8125rem;
+  --texto-md: 1rem;
+  --texto-lg: 1.125rem;
+  --texto-titulo: 1.625rem;
+  --texto-xl: 1.75rem;
+
+  /* Forma y medidas */
+  --radio: 8px;
+  --ancho-menu: 250px;
+}
