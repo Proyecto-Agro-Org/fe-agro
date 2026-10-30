@@ -2,7 +2,6 @@ import { http, HttpResponse } from 'msw'
 import type { AreaResumen, AreasRespuesta } from '../../types/areas'
 import {
   alertasActivas,
-  AREAS,
   areasDeCampo,
   estadoSensor,
   sensoresDeArea,
@@ -35,12 +34,6 @@ function resumirArea(area: AreaDb): AreaResumen {
 }
 
 export default [
-  // Compatibilidad exclusiva del filtro de Alertas, fuera del alcance de A07.
-  http.get('*/alertas/areas', async () => {
-    const resultado = await escenarioPara('areas')
-    if (resultado.tipo === 'respuesta') return resultado.respuesta
-    return HttpResponse.json({ areas: resultado.tipo === 'vacio' ? [] : AREAS.map(resumirArea) })
-  }),
   http.get('*/areas', async ({ request }) => {
     const campo = campoAutorizado(request)
     if (campo instanceof Response) return campo

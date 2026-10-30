@@ -47,7 +47,7 @@ describe('AppLayout', () => {
   it('la insignia de Alertas muestra el total de alertas activas', async () => {
     await entrar('/dashboard')
 
-    expect(await screen.findByText('5')).toBeInTheDocument()
+    expect(await screen.findByText('2')).toBeInTheDocument()
   })
 
   it('la insignia no aparece cuando el total es 0', async () => {

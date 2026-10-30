@@ -1,6 +1,6 @@
 import { HttpResponse } from 'msw'
 import type { Campo } from '../../types/dominio'
-import { CAMPOS, buscarArea, buscarSensor, type SensorDb } from './db'
+import { CAMPOS, SENSORES, areasDeCampo, buscarArea, buscarSensor, type SensorDb } from './db'
 import { identidadPorToken } from './identidades'
 
 // Validación del mock, independiente de preferencias o parámetros de cliente.
@@ -24,4 +24,10 @@ export function sensorAutorizado(request: Request, deviceId: string): SensorDb |
     return HttpResponse.json({ error: 'No encontramos este sensor' }, { status: 404 })
   }
   return sensor
+}
+
+// Se usa después de campoAutorizado; conserva el orden de la base compartida.
+export function sensoresDelCampo(campo: Campo): SensorDb[] {
+  const ids = new Set(areasDeCampo(campo.campo_id).map((area) => area.area_id))
+  return SENSORES.filter((sensor) => ids.has(sensor.area_id))
 }

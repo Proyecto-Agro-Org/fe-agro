@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw'
 import type { AlertasRespuesta } from '../../types/alertas'
-import { ALERTAS, alertaParaApi } from '../data/db'
+import { ALERTAS, alertaParaApi, buscarArea } from '../data/db'
+import { campoAutorizado, sensoresDelCampo } from '../data/alcance'
 import { escenarioPara } from '../escenarios'
 
 const LIMITE_POR_DEFECTO = 50
@@ -15,10 +16,16 @@ function pedidoInvalido(mensaje: string) {
 
 export default [
   http.get('*/alertas', async ({ request }) => {
+    const campo = campoAutorizado(request)
+    if (campo instanceof Response) return campo
+    const params = new URL(request.url).searchParams
+    const areaId = params.get('area_id')
+    if (areaId !== null && buscarArea(areaId)?.campo_id !== campo.campo_id) {
+      return HttpResponse.json({ error: 'Área no disponible' }, { status: 404 })
+    }
     const resultado = await escenarioPara('alertas')
     if (resultado.tipo === 'respuesta') return resultado.respuesta
 
-    const params = new URL(request.url).searchParams
 
     const textoLimit = params.get('limit')
     const limit = textoLimit === null ? LIMITE_POR_DEFECTO : Number(textoLimit)
@@ -39,12 +46,12 @@ export default [
       return HttpResponse.json(vacia)
     }
 
-    const areaId = params.get('area_id')
     const tipo = params.get('tipo')
     const estado = params.get('estado')
     const severidad = params.get('severidad')
 
-    const filtradas = ALERTAS.map(alertaParaApi)
+    const idsSensores = new Set(sensoresDelCampo(campo).map((sensor) => sensor.device_id))
+    const filtradas = ALERTAS.filter((alerta) => idsSensores.has(alerta.device_id)).map(alertaParaApi)
       .filter((alerta) => {
         if (areaId !== null && alerta.area_id !== areaId) return false
         if (tipo !== null && alerta.tipo !== tipo) return false

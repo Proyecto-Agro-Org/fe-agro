@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { obtenerAlertas } from '../../api/alertas'
-import { obtenerAreasParaAlertas } from '../../api/areas'
+import { obtenerAreas } from '../../api/areas'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ErrorBlock } from '../../components/ui/ErrorBlock'
 import { SeverityBadge } from '../../components/ui/SeverityBadge'
@@ -13,6 +13,8 @@ import type { Alerta, AlertasRespuesta, TipoAlerta } from '../../types/alertas'
 import type { AreasRespuesta } from '../../types/areas'
 import type { Severidad } from '../../types/comun'
 import styles from './AlertasPage.module.css'
+import { useCampo } from '../../app/campo'
+import { EstadoSinCampo } from '../../components/layout/EstadoSinCampo'
 
 const LIMITE_ALERTAS = 50
 
@@ -146,6 +148,14 @@ function TablaAlertas({
 }
 
 export default function AlertasPage() {
+  const { campoSeleccionado } = useCampo()
+  useBreadcrumb([{ etiqueta: 'Inicio', a: '/dashboard' }, { etiqueta: 'Alertas' }])
+  return campoSeleccionado
+    ? <AlertasDelCampo key={campoSeleccionado.campo_id} campoId={campoSeleccionado.campo_id} />
+    : <EstadoSinCampo titulo="Alertas" />
+}
+
+function AlertasDelCampo({ campoId }: { campoId: string }) {
   const [filtros, setFiltros] = useState<Filtros>(SIN_FILTROS)
   const [aplicados, setAplicados] = useState<Filtros>(SIN_FILTROS)
   function limpiarFiltros() {
@@ -160,11 +170,12 @@ export default function AlertasPage() {
     datos: areas,
     estado: estadoAreas,
     recargar: recargarAreas,
-  } = useApi<AreasRespuesta>((signal) => obtenerAreasParaAlertas(signal), [])
+  } = useApi<AreasRespuesta>((signal) => obtenerAreas(campoId, signal), [campoId])
 
   const { estado, datos, recargar } = useApi<AlertasRespuesta>(
     (signal) =>
       obtenerAlertas(
+        campoId,
         {
           estado: 'activa',
           limit: LIMITE_ALERTAS,
@@ -174,9 +185,8 @@ export default function AlertasPage() {
         },
         signal,
       ),
-    [aplicados.area_id, aplicados.tipo, aplicados.severidad],
+    [campoId, aplicados.area_id, aplicados.tipo, aplicados.severidad],
   )
-  useBreadcrumb([{ etiqueta: 'Inicio', a: '/dashboard' }, { etiqueta: 'Alertas' }])
 
   let contenido
   if (estado === 'cargando') {
