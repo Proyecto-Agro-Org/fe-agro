@@ -33,7 +33,6 @@
 .filtros input,
 .filtros select {
   padding: 9px;
-  color-scheme: dark;
   background: var(--color-fondo);
   color: var(--color-texto);
   border: 1px solid var(--color-borde);

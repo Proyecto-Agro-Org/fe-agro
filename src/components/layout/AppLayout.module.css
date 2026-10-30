@@ -141,7 +141,7 @@
   padding: 1px 7px;
   border-radius: 10px;
   background: var(--color-menu-alerta);
-  color: var(--color-texto);
+  color: var(--color-texto-sobre-intenso);
   font-size: var(--texto-badge);
   font-weight: 600;
   line-height: 13px;
@@ -173,6 +173,11 @@
 .icono {
   display: block;
   flex-shrink: 0;
+  filter: var(--filtro-icono-menu);
+}
+
+.deshabilitado .icono {
+  opacity: 0.55;
 }
 
 .cerrarSesion {

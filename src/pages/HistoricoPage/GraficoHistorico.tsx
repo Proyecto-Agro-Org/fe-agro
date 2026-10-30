@@ -28,7 +28,7 @@ export default function GraficoHistorico({
           data={datos.puntos.map((p) => ({ ...p, instante: Date.parse(p.timestamp) }))}
           margin={{ top: 12, right: 24, bottom: 12, left: 0 }}
         >
-          <CartesianGrid stroke="var(--color-borde)" vertical={false} />
+          <CartesianGrid stroke="var(--color-grafico-rejilla)" vertical={false} />
           <XAxis
             dataKey="instante"
             type="number"
@@ -49,7 +49,9 @@ export default function GraficoHistorico({
             contentStyle={{
               background: 'var(--color-superficie)',
               borderColor: 'var(--color-borde)',
+              color: 'var(--color-texto)',
             }}
+            labelStyle={{ color: 'var(--color-texto)' }}
           />
           <Line
             type="linear"

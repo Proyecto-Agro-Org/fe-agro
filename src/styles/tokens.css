@@ -1,4 +1,6 @@
 :root {
+  color-scheme: dark;
+  background-color: var(--color-fondo);
   /* Fondos y texto (tema oscuro) */
   --color-fondo: #232323;
   --color-menu: #131313;
@@ -17,7 +19,7 @@
   /* Estado y severidad: verde = conectado / baja, ámbar = media, rojo = desconectado / alta */
   --color-ok: #78c486;
   --color-advertencia: #fbbf24;
-  --color-peligro: #f87171;
+  --color-peligro: #ff9999;
 
   /* Acciones primarias (botones) */
   --color-accion: #203b27;
@@ -28,6 +30,11 @@
   --color-pin-ok: #347c40;
   --color-pin-peligro: #b84242;
   --color-mapa-fondo: #353c35;
+  --color-texto-sobre-intenso: #ffffff;
+  --color-pin-borde: #f5f5f5;
+  --filtro-icono-menu: none;
+  --filtro-teselas: invert(0.9) hue-rotate(180deg) brightness(0.85) contrast(0.9);
+  --color-grafico-rejilla: #778172;
 
   /* Espaciado */
   --espacio-1: 4px;
@@ -52,4 +59,31 @@
   /* Forma y medidas */
   --radio: 8px;
   --ancho-menu: 250px;
+}
+
+:root[data-tema='claro'] {
+  color-scheme: light;
+  --color-fondo: #f3f7f2;
+  --color-menu: #e7eee4;
+  --color-menu-activo: #d5e8d2;
+  --color-menu-activo-borde: #347c40;
+  --color-texto-inactivo: #657264;
+  --color-superficie: #ffffff;
+  --color-superficie-2: #e8eee6;
+  --color-borde: #7a8875;
+  --color-texto: #19291c;
+  --color-texto-suave: #4d604f;
+  --color-acento: #256b35;
+  --color-foco: #086f9d;
+  --color-ok: #245f2c;
+  --color-advertencia: #7a4b00;
+  --color-peligro: #a12727;
+  --color-accion: #dcecd8;
+  --color-accion-borde: #347c40;
+  --color-accion-hover: #cce3c6;
+  --color-mapa-fondo: #e1e9de;
+  --color-pin-borde: #ffffff;
+  --filtro-icono-menu: brightness(0);
+  --filtro-teselas: none;
+  --color-grafico-rejilla: #7a8875;
 }

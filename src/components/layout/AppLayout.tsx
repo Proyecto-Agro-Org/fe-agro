@@ -6,6 +6,7 @@ import { useAlertasActivas } from '../../hooks/useAlertasActivas'
 import { Breadcrumb } from './Breadcrumb'
 import { BreadcrumbProvider } from './BreadcrumbProvider'
 import { SelectorCampo } from './SelectorCampo'
+import { SelectorTema } from './SelectorTema'
 import estilos from './AppLayout.module.css'
 
 interface EnlaceMenu {
@@ -52,6 +53,7 @@ function ContenidoLayout() {
             </div>
           )}
           <SelectorCampo />
+          <SelectorTema />
           <button
             type="button"
             className={estilos.botonMenu}
