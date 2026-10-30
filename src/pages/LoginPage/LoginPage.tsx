@@ -32,7 +32,7 @@ export default function LoginPage() {
           ? await loginGoogleDemo()
           : await login({ email: usuario.trim(), password })
       // La redirección al Dashboard la hace RutaSoloPublica cuando aparece el token.
-      iniciarSesion(respuesta.token)
+      await iniciarSesion(respuesta)
     } catch (e) {
       if (metodo === 'google') {
         setError('google')

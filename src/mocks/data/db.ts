@@ -44,7 +44,7 @@ export interface AlertaDb {
   creada_hace_min: number
 }
 
-// Entidades ficticias: no se usan para autenticar ni asignar una sesión a un cliente.
+// Entidades ficticias. Solo los mocks de identidad pueden asociarlas con una sesión demo.
 export const CLIENTES: Cliente[] = [
   { cliente_id: 'cliente_horizonte_verde', nombre: 'Agropecuaria Horizonte Verde' },
   { cliente_id: 'cliente_los_aromos', nombre: 'Agropecuaria Los Aromos' },

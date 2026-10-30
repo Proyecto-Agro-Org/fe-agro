@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { server } from '../mocks/server'
 import { guardarToken } from './sesion'
-import { loginGoogleDemo } from './login'
+import { loginGoogleDemo, recuperarIdentidadDemo } from './login'
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -23,7 +23,11 @@ describe('loginGoogleDemo', () => {
 
     await expect(loginGoogleDemo()).resolves.toEqual({
       token: 'token-demo',
-      usuario: { nombre: 'Usuaria Demo', email: 'demo@agro.com' },
+      usuario: {
+        usuario_id: 'usuario_ana_rios', nombre: 'Ana Ríos',
+        email: 'ana.rios@horizonte-verde.example', cliente_id: 'cliente_horizonte_verde',
+      },
+      cliente: { cliente_id: 'cliente_horizonte_verde', nombre: 'Agropecuaria Horizonte Verde' },
     })
   })
 
@@ -41,5 +45,14 @@ describe('loginGoogleDemo', () => {
     expect(pedido).toBeDefined()
     expect(pedido!.headers.get('Authorization')).toBeNull()
     expect(await pedido!.text()).toBe('')
+  })
+})
+
+describe('recuperarIdentidadDemo', () => {
+  it('no consulta endpoints demo cuando los mocks están apagados', async () => {
+    vi.stubEnv('VITE_USE_MOCKS', 'false')
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    await expect(recuperarIdentidadDemo('token-demo')).rejects.toThrow('requiere mocks')
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 })

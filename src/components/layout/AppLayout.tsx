@@ -26,7 +26,7 @@ function estaActivo(pathname: string, prefijos: string[]): boolean {
 }
 
 export default function AppLayout() {
-  const { cerrarSesion } = useAuth()
+  const { cerrarSesion, usuario, cliente } = useAuth()
   const { pathname } = useLocation()
   const alertasActivas = useAlertasActivas()
   const [menuAbierto, setMenuAbierto] = useState(false)
@@ -39,6 +39,12 @@ export default function AppLayout() {
         <header className={estilos.barra}>
           <p className={estilos.marca}>Monitoreo del suelo</p>
           <p className={estilos.marcaMovil}>Agro IoT</p>
+          {usuario && cliente && (
+            <div className={estilos.identidad} aria-label="Usuario y cliente de la sesión">
+              <span className={estilos.usuario}>{usuario.nombre}</span>
+              <span>{cliente.nombre}</span>
+            </div>
+          )}
           <button
             type="button"
             className={estilos.botonMenu}

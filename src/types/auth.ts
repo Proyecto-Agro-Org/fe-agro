@@ -1,4 +1,4 @@
-import type { Usuario } from './dominio'
+import type { Cliente, Usuario } from './dominio'
 
 export type { Usuario } from './dominio'
 
@@ -7,13 +7,19 @@ export interface LoginPedido {
   password: string
 }
 
-// Compatibilidad con el login actual. A04 deberá completar ambos identificadores
-// antes de tratar esta respuesta como un Usuario de dominio.
+// Compatibilidad con el backend actual. Los mocks ya completan los IDs;
+// el contrato real todavía permite respuestas sin identidad completa.
 export type UsuarioLogin = Pick<Usuario, 'nombre' | 'email'> &
   Partial<Pick<Usuario, 'usuario_id' | 'cliente_id'>>
 
-// El frontend solo necesita el token; usuario es opcional.
+// El contrato real conserva token como único campo obligatorio.
 export interface LoginRespuesta {
   token: string
   usuario?: UsuarioLogin
+  cliente?: Cliente
+}
+
+export interface IdentidadSesion {
+  usuario: Usuario
+  cliente: Cliente
 }
