@@ -1,4 +1,5 @@
 import type { Alerta } from './alertas'
+import type { AreaApi } from './areas'
 
 export interface ResumenGeneral {
   areas: number
@@ -8,9 +9,7 @@ export interface ResumenGeneral {
   alertas_activas: number
 }
 
-export interface AreaDashboard {
-  area_id: string
-  nombre: string
+export interface AreaDashboard extends AreaApi {
   sensores: number
   conectados: number
   desconectados: number
