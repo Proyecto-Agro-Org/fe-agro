@@ -83,13 +83,14 @@ describe('selector de campos en el encabezado', () => {
     fireEvent.click(screen.getByRole('link', { name: 'Áreas' }))
     expect(await screen.findByText('Áreas de prueba')).toBeInTheDocument()
     expect(screen.getByRole('combobox', { name: 'Campo' })).toHaveDisplayValue('La Esperanza')
-    expect(localStorage.getItem(CLAVE_ANA)).toBe('campo_la_esperanza')
+    await waitFor(() => expect(localStorage.getItem(CLAVE_ANA)).toBe('campo_la_esperanza'))
   })
 
   it('recupera la preferencia del cliente tras recargar y la valida contra la lista', async () => {
     const vista = montar()
     const selector = await esperarCampo('El Molino')
     fireEvent.change(selector, { target: { value: 'campo_la_esperanza' } })
+    await waitFor(() => expect(localStorage.getItem(CLAVE_ANA)).toBe('campo_la_esperanza'))
     vista.unmount()
     renderConRutas(rutas, '/dashboard')
     await esperarCampo('La Esperanza')
@@ -109,7 +110,7 @@ describe('selector de campos en el encabezado', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Campo ajeno de prueba' }))
     fireEvent.click(screen.getByRole('button', { name: 'Campo inexistente de prueba' }))
     expect(screen.getByTestId('campo-contexto')).toHaveTextContent('campo_el_molino')
-    expect(localStorage.getItem(CLAVE_ANA)).toBe('campo_el_molino')
+    await waitFor(() => expect(localStorage.getItem(CLAVE_ANA)).toBe('campo_el_molino'))
   })
 
   it('revalida la selección al cambiar de cuenta y conserva preferencias separadas por cliente', async () => {
@@ -119,12 +120,12 @@ describe('selector de campos en el encabezado', () => {
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
     ingresar('lucia.vega@los-aromos.example')
     fireEvent.change(await esperarCampo('La Ribera'), { target: { value: 'campo_los_olivos' } })
-    expect(localStorage.getItem(CLAVE_LUCIA)).toBe('campo_los_olivos')
+    await waitFor(() => expect(localStorage.getItem(CLAVE_LUCIA)).toBe('campo_los_olivos'))
     expect(screen.queryByRole('option', { name: 'La Esperanza' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
     ingresar('ana.rios@horizonte-verde.example')
     await esperarCampo('La Esperanza')
-    expect(localStorage.getItem(CLAVE_ANA)).toBe('campo_la_esperanza')
+    await waitFor(() => expect(localStorage.getItem(CLAVE_ANA)).toBe('campo_la_esperanza'))
     expect(screen.queryByRole('option', { name: 'Los Olivos' })).not.toBeInTheDocument()
   })
 
