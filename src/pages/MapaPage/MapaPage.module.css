@@ -24,7 +24,6 @@
 }
 .filtros select {
   padding: 9px 12px;
-  color-scheme: dark;
   color: var(--color-texto);
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
@@ -71,10 +70,10 @@
 .pinDesconectado {
   display: grid;
   place-items: center;
-  border: 2px solid var(--color-texto);
+  border: 2px solid var(--color-pin-borde);
   border-radius: 50%;
   box-shadow: 0 2px 6px color-mix(in srgb, var(--color-fondo) 50%, transparent);
-  color: var(--color-texto);
+  color: var(--color-texto-sobre-intenso);
   font: bold var(--texto-lg)/1 system-ui;
 }
 .pinConectado {
@@ -147,4 +146,33 @@
 }
 .mapa :global(.leaflet-popup-content a) {
   color: var(--color-acento);
+}
+
+.mapa :global(.leaflet-tile-pane) {
+  filter: var(--filtro-teselas);
+}
+
+.mapa :global(.leaflet-bar a),
+.mapa :global(.leaflet-control-attribution) {
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  border-color: var(--color-borde);
+}
+
+.mapa :global(.leaflet-bar a:hover) {
+  background: var(--color-superficie-2);
+  color: var(--color-texto);
+}
+
+.mapa :global(.leaflet-control-attribution a) {
+  color: var(--color-acento);
+}
+
+.mapa :global(.leaflet-popup a.leaflet-popup-close-button) {
+  color: var(--color-texto-suave);
+}
+
+.mapa :global(.leaflet-bar a.leaflet-disabled) {
+  background: var(--color-superficie-2);
+  color: var(--color-texto-inactivo);
 }

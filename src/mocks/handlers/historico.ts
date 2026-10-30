@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
-import { buscarSensor, buscarArea } from '../data/db'
+import { buscarArea } from '../data/db'
+import { sensorAutorizado } from '../data/alcance'
 import { generarSerie, type Variable } from '../data/generadores'
 import { escenarioPara } from '../escenarios'
 import type { HistoricoRespuesta } from '../../types/historico'
@@ -13,8 +14,8 @@ const UNIDADES: Record<Variable, string> = {
 }
 export default [
   http.get('*/sensores/:deviceId/historico', async ({ params, request }) => {
-    const sensor = buscarSensor(String(params.deviceId))
-    if (!sensor) return HttpResponse.json({ error: 'No encontramos este sensor' }, { status: 404 })
+    const sensor = sensorAutorizado(request, String(params.deviceId))
+    if (sensor instanceof Response) return sensor
     const query = new URL(request.url).searchParams
     const variable = query.get('variable') as Variable
     if (!Object.hasOwn(UNIDADES, variable))

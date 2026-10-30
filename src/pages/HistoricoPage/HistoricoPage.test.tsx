@@ -5,6 +5,10 @@ import { http, HttpResponse } from 'msw'
 import { BreadcrumbProvider } from '../../components/layout/BreadcrumbProvider'
 import { server } from '../../mocks/server'
 import HistoricoPage from './HistoricoPage'
+// Precarga el gráfico real: su importación en frío no debe consumir la espera de render.
+import './GraficoHistorico'
+import { CampoPrueba } from '../../test/campo'
+import { prepararCampoPrueba } from '../../test/prepararCampo'
 beforeAll(() =>
   vi.stubGlobal(
     'ResizeObserver',
@@ -17,14 +21,16 @@ beforeAll(() =>
 )
 afterAll(() => vi.unstubAllGlobals())
 function montar(id = 'sensor_014') {
+  const campoId = id === 'sensor_010' ? 'campo_la_ribera' : 'campo_el_molino'
+  prepararCampoPrueba(campoId)
   render(
-    <MemoryRouter initialEntries={[`/sensores/${id}/historico`]}>
+    <CampoPrueba campoId={campoId}><MemoryRouter initialEntries={[`/sensores/${id}/historico`]}>
       <BreadcrumbProvider>
         <Routes>
           <Route path="/sensores/:deviceId/historico" element={<HistoricoPage />} />
         </Routes>
       </BreadcrumbProvider>
-    </MemoryRouter>,
+    </MemoryRouter></CampoPrueba>,
   )
 }
 const respuesta = {
@@ -93,6 +99,7 @@ describe('históricos', () => {
     expect(new URL(url).searchParams.get('desde')).toBe(
       new Date('2026-10-20T00:00:00').toISOString(),
     )
+    expect(new URL(url).searchParams.get('campo_id')).toBe('campo_el_molino')
     expect(new URL(url).searchParams.get('hasta')).toBe(
       new Date('2026-10-21T23:59:59.999').toISOString(),
     )

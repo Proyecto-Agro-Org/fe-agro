@@ -1,8 +1,11 @@
 import type { Estado, Ubicacion } from './comun'
-export interface AreaDetalle { area_id: string; nombre: string }
-export interface SensorDeArea {
-  device_id: string
-  nombre: string
+import type { AreaApi } from './areas'
+import type { Sensor } from './dominio'
+
+export type AreaDetalle = AreaApi
+
+// La pertenencia al área está dada por la ruta /areas/:id/sensores.
+export interface SensorDeArea extends Omit<Sensor, 'area_id'> {
   estado: Estado
   ultima_comunicacion: string | null
   ubicacion: Ubicacion | null

@@ -18,10 +18,6 @@ body,
   height: 100%;
 }
 
-html {
-  color-scheme: dark;
-}
-
 * {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--color-texto-suave) 50%, var(--color-fondo)) transparent;

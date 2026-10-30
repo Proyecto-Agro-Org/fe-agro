@@ -1,8 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './styles/tokens.css'
 import './styles/global.css'
 import App from './App'
+import { inicializarTema } from './app/tema'
+
+inicializarTema()
 
 async function iniciar() {
   // Con VITE_USE_MOCKS en true, MSW responde los pedidos a la API antes de dibujar la app.

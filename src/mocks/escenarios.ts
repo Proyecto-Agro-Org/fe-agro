@@ -5,6 +5,7 @@ export type Escenario = 'normal' | 'lento' | 'vacio' | 'error' | 'offline' | 'er
 
 export type ClaveEndpoint =
   | 'login'
+  | 'campos'
   | 'dashboard'
   | 'areas'
   | 'area'
@@ -36,6 +37,7 @@ const ESCENARIOS: readonly Escenario[] = [
 
 const ENDPOINTS: readonly ClaveEndpoint[] = [
   'login',
+  'campos',
   'dashboard',
   'areas',
   'area',

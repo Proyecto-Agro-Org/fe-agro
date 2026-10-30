@@ -9,6 +9,8 @@ import { useApi } from '../../hooks/useApi'
 import { cantidad, formatFechaHora, formatRelativo } from '../../lib/formato'
 import type { AreaDashboard, DashboardRespuesta } from '../../types/dashboard'
 import styles from './DashboardPage.module.css'
+import { useCampo } from '../../app/campo'
+import { EstadoSinCampo } from '../../components/layout/EstadoSinCampo'
 
 const CANTIDAD_ALERTAS_RECIENTES = 4
 
@@ -129,12 +131,18 @@ function CargandoDashboard() {
 }
 
 export default function DashboardPage() {
-  const { estado, datos, recargar } = useApi<DashboardRespuesta>(
-    (signal) => obtenerDashboard(signal),
-    [],
-  )
-
+  const { campoSeleccionado } = useCampo()
   useBreadcrumb([{ etiqueta: 'Inicio' }])
+  return campoSeleccionado
+    ? <DashboardDeCampo key={campoSeleccionado.campo_id} campoId={campoSeleccionado.campo_id} />
+    : <EstadoSinCampo titulo="Dashboard" />
+}
+
+function DashboardDeCampo({ campoId }: { campoId: string }) {
+  const { estado, datos, recargar } = useApi<DashboardRespuesta>(
+    (signal) => obtenerDashboard(campoId, signal),
+    [campoId],
+  )
 
   let contenido
   if (estado === 'cargando') {
@@ -247,7 +255,7 @@ export default function DashboardPage() {
     <section className={styles.pagina}>
       <header className={styles.cabecera}>
         <h1 className={styles.titulo}>Dashboard</h1>
-        {estado === 'exito' && datos && (
+        {estado === 'exito' && datos?.ultima_actualizacion && (
           <p className={styles.actualizacion}>
             Última actualización:{' '}
             <time

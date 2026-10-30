@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../app/auth'
+import { CampoProvider } from '../../app/CampoProvider'
 import { useAlertasActivas } from '../../hooks/useAlertasActivas'
 import { Breadcrumb } from './Breadcrumb'
 import { BreadcrumbProvider } from './BreadcrumbProvider'
+import { SelectorCampo } from './SelectorCampo'
+import { SelectorTema } from './SelectorTema'
 import estilos from './AppLayout.module.css'
 
 interface EnlaceMenu {
@@ -26,7 +29,11 @@ function estaActivo(pathname: string, prefijos: string[]): boolean {
 }
 
 export default function AppLayout() {
-  const { cerrarSesion } = useAuth()
+  return <CampoProvider><ContenidoLayout /></CampoProvider>
+}
+
+function ContenidoLayout() {
+  const { cerrarSesion, usuario, cliente } = useAuth()
   const { pathname } = useLocation()
   const alertasActivas = useAlertasActivas()
   const [menuAbierto, setMenuAbierto] = useState(false)
@@ -39,6 +46,14 @@ export default function AppLayout() {
         <header className={estilos.barra}>
           <p className={estilos.marca}>Monitoreo del suelo</p>
           <p className={estilos.marcaMovil}>Agro IoT</p>
+          {usuario && cliente && (
+            <div className={estilos.identidad} aria-label="Usuario y cliente de la sesión">
+              <span className={estilos.usuario}>{usuario.nombre}</span>
+              <span>{cliente.nombre}</span>
+            </div>
+          )}
+          <SelectorCampo />
+          <SelectorTema />
           <button
             type="button"
             className={estilos.botonMenu}

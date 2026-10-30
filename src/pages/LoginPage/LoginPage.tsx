@@ -1,38 +1,49 @@
-import { useState, type FormEvent } from 'react'
-import { login } from '../../api/login'
+import { useRef, useState, type FormEvent } from 'react'
+import { login, loginGoogleDemo } from '../../api/login'
 import { useAuth } from '../../app/auth'
 import { ErrorBlock } from '../../components/ui/ErrorBlock'
 import { Spinner } from '../../components/ui/Spinner'
 import { ErrorApi } from '../../types/comun'
 import styles from './LoginPage.module.css'
 
-type ErrorLogin = 'credenciales' | 'conexion' | null
+type ErrorLogin = 'credenciales' | 'conexion' | 'google' | null
+type MetodoLogin = 'password' | 'google'
 
 export default function LoginPage() {
   const { iniciarSesion, sesionExpirada } = useAuth()
   const [usuario, setUsuario] = useState('')
   const [password, setPassword] = useState('')
   const [mostrarPassword, setMostrarPassword] = useState(false)
-  const [enviando, setEnviando] = useState(false)
+  const [metodoEnviando, setMetodoEnviando] = useState<MetodoLogin | null>(null)
+  const solicitudEnCurso = useRef(false)
   const [error, setError] = useState<ErrorLogin>(null)
+  const googleDisponible = import.meta.env.VITE_USE_MOCKS === 'true'
+  const enviando = metodoEnviando !== null
 
-  async function enviar() {
-    // Evita el doble envío aunque el botón ya esté deshabilitado.
-    if (enviando) return
-    setEnviando(true)
+  async function enviar(metodo: MetodoLogin = 'password') {
+    // El bloqueo sincrónico también cubre reintentos y envíos entre ambos métodos.
+    if (solicitudEnCurso.current || (metodo === 'google' && !googleDisponible)) return
+    solicitudEnCurso.current = true
+    setMetodoEnviando(metodo)
     setError(null)
     try {
-      const respuesta = await login({ email: usuario.trim(), password })
+      const respuesta =
+        metodo === 'google'
+          ? await loginGoogleDemo()
+          : await login({ email: usuario.trim(), password })
       // La redirección al Dashboard la hace RutaSoloPublica cuando aparece el token.
-      iniciarSesion(respuesta.token)
+      await iniciarSesion(respuesta)
     } catch (e) {
-      if (e instanceof ErrorApi && e.estado === 401) {
+      if (metodo === 'google') {
+        setError('google')
+      } else if (e instanceof ErrorApi && e.estado === 401) {
         setError('credenciales')
         setPassword('')
       } else {
         setError('conexion')
       }
-      setEnviando(false)
+      solicitudEnCurso.current = false
+      setMetodoEnviando(null)
     }
   }
 
@@ -117,8 +128,49 @@ export default function LoginPage() {
 
         <button type="submit" className={styles.boton} disabled={enviando}>
           <span className={styles.contenidoBoton}>
-            <span style={{ visibility: enviando ? 'hidden' : 'visible' }} aria-hidden={enviando}>Ingresar</span>
-            {enviando && <Spinner etiqueta="Ingresando…" />}
+            <span
+              style={{ visibility: metodoEnviando === 'password' ? 'hidden' : 'visible' }}
+              aria-hidden={metodoEnviando === 'password'}
+            >
+              Ingresar
+            </span>
+            {metodoEnviando === 'password' && <Spinner etiqueta="Ingresando…" />}
+          </span>
+        </button>
+
+        <div className={styles.separador}>O continuá con</div>
+
+        {error === 'google' && (
+          <ErrorBlock
+            mensaje="No se pudo completar el acceso simulado con Google. Intentá nuevamente."
+            onReintentar={() => void enviar('google')}
+          />
+        )}
+
+        <button
+          type="button"
+          className={styles.botonGoogle}
+          disabled={!googleDisponible || enviando}
+          onClick={() => void enviar('google')}
+        >
+          <span className={styles.contenidoBoton}>
+            <span
+              className={styles.opcionGoogle}
+              style={{ visibility: metodoEnviando === 'google' ? 'hidden' : 'visible' }}
+              aria-hidden={metodoEnviando === 'google'}
+            >
+              <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                <path fill="#4285F4" d="M43.61 24.46c0-1.36-.12-2.66-.35-3.92H24v7.42h11a9.4 9.4 0 0 1-4.08 6.18v5.14h6.6c3.86-3.56 6.09-8.8 6.09-14.82Z" />
+                <path fill="#34A853" d="M24 44c5.51 0 10.13-1.83 13.51-4.96l-6.6-5.14c-1.83 1.23-4.17 1.98-6.91 1.98-5.32 0-9.84-3.59-11.46-8.43H5.73v5.3A20 20 0 0 0 24 44Z" />
+                <path fill="#FBBC05" d="M12.54 27.45a12 12 0 0 1 0-6.9v-5.3H5.73a20 20 0 0 0 0 17.5l6.81-5.3Z" />
+                <path fill="#EA4335" d="M24 12.12c3 0 5.67 1.03 7.8 3.04l5.85-5.85A19.6 19.6 0 0 0 24 4 20 20 0 0 0 5.73 15.25l6.81 5.3C14.16 15.71 18.68 12.12 24 12.12Z" />
+              </svg>
+              <span>Continuar con Google</span>
+            </span>
+            {metodoEnviando === 'google' && <Spinner etiqueta="Ingresando con Google…" />}
+          </span>
+          <span className={styles.proximamente}>
+            {googleDisponible ? 'Acceso simulado · Demo' : 'Próximamente · No disponible'}
           </span>
         </button>
       </form>

@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=hojas" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script id="tema-inicial">
+      // Solo anticipa la preferencia visual; el control central vive en src/app/tema.ts.
+      try {
+        document.documentElement.dataset.tema = localStorage.getItem('agro_tema') === 'claro' ? 'claro' : 'oscuro';
+      } catch {
+        document.documentElement.dataset.tema = 'oscuro';
+      }
+    </script>
+    <link rel="stylesheet" href="/src/styles/tokens.css" />
     <title>agro IoT - Monitoreo del suelo</title>
   </head>
   <body>

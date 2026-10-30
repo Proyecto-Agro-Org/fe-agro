@@ -1,17 +1,20 @@
 import { http, HttpResponse } from 'msw'
-import { SENSORES, buscarArea, estadoSensor, ultimaComunicacion } from '../data/db'
+import { buscarArea, estadoSensor, ultimaComunicacion } from '../data/db'
+import { campoAutorizado, sensoresDelCampo } from '../data/alcance'
 import { generarMedicion } from '../data/generadores'
 import { escenarioPara } from '../escenarios'
 import type { MapaRespuesta } from '../../types/mapa'
 export default [
-  http.get('*/mapa/sensores', async () => {
+  http.get('*/mapa/sensores', async ({ request }) => {
+    const campo = campoAutorizado(request)
+    if (campo instanceof Response) return campo
     const escenario = await escenarioPara('mapa')
     if (escenario.tipo === 'respuesta') return escenario.respuesta
     return HttpResponse.json<MapaRespuesta>({
       sensores:
         escenario.tipo === 'vacio'
           ? []
-          : SENSORES.map((sensor) => {
+          : sensoresDelCampo(campo).map((sensor) => {
               const medicion = generarMedicion(sensor.device_id)
               return {
                 device_id: sensor.device_id,

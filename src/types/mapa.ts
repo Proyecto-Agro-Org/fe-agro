@@ -1,8 +1,7 @@
 import type { Estado, Medida, Ubicacion } from './comun'
-export interface SensorMapa {
-  device_id: string
-  nombre: string
-  area_id: string
+import type { Sensor } from './dominio'
+
+export interface SensorMapa extends Sensor {
   area_nombre: string
   estado: Estado
   ubicacion: Ubicacion | null

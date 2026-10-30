@@ -22,14 +22,16 @@ const rutas = (
   </Routes>
 )
 
-function entrar(ruta: string) {
-  guardarToken('token-de-prueba')
-  return renderConRutas(rutas, ruta)
+async function entrar(ruta: string) {
+  guardarToken('token-demo')
+  const vista = renderConRutas(rutas, ruta)
+  await screen.findByRole('navigation', { name: 'Navegación principal' })
+  return vista
 }
 
 describe('AppLayout', () => {
-  it('el menú aparece en una ruta protegida', () => {
-    entrar('/dashboard')
+  it('el menú aparece en una ruta protegida', async () => {
+    await entrar('/dashboard')
 
     expect(screen.getByRole('navigation', { name: 'Navegación principal' })).toBeInTheDocument()
     expect(screen.getByText('Contenido del dashboard')).toBeInTheDocument()
@@ -43,9 +45,9 @@ describe('AppLayout', () => {
   })
 
   it('la insignia de Alertas muestra el total de alertas activas', async () => {
-    entrar('/dashboard')
+    await entrar('/dashboard')
 
-    expect(await screen.findByText('5')).toBeInTheDocument()
+    expect(await screen.findByText('2')).toBeInTheDocument()
   })
 
   it('la insignia no aparece cuando el total es 0', async () => {
@@ -56,7 +58,7 @@ describe('AppLayout', () => {
         return HttpResponse.json({ total: 0, limit: 1, alertas: [] })
       }),
     )
-    entrar('/dashboard')
+    await entrar('/dashboard')
 
     await waitFor(() => expect(seHizoElPedido).toBe(true))
     await act(async () => {
@@ -74,7 +76,7 @@ describe('AppLayout', () => {
         return HttpResponse.json({ error: 'falló' }, { status: 500 })
       }),
     )
-    entrar('/dashboard')
+    await entrar('/dashboard')
 
     await waitFor(() => expect(seHizoElPedido).toBe(true))
     await act(async () => {
@@ -84,8 +86,8 @@ describe('AppLayout', () => {
     expect(screen.getByRole('link', { name: /Alertas/ })).toBeInTheDocument()
   })
 
-  it('Análisis/IA está deshabilitado, con la etiqueta Próximamente, y no es un enlace', () => {
-    entrar('/dashboard')
+  it('Análisis/IA está deshabilitado, con la etiqueta Próximamente, y no es un enlace', async () => {
+    await entrar('/dashboard')
 
     expect(screen.getByText('Análisis/IA').closest('[aria-disabled]')).toHaveAttribute(
       'aria-disabled',
@@ -95,15 +97,15 @@ describe('AppLayout', () => {
     expect(screen.queryByRole('link', { name: /Análisis/ })).not.toBeInTheDocument()
   })
 
-  it('Áreas queda activa también en el detalle de un sensor', () => {
-    entrar('/sensores/sensor_014')
+  it('Áreas queda activa también en el detalle de un sensor', async () => {
+    await entrar('/sensores/sensor_014')
 
     expect(screen.getByRole('link', { name: 'Áreas' })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('link', { name: 'Dashboard' })).not.toHaveAttribute('aria-current')
   })
 
-  it('en móvil, el botón Menú abre y cierra la navegación', () => {
-    entrar('/dashboard')
+  it('en móvil, el botón Menú abre y cierra la navegación', async () => {
+    await entrar('/dashboard')
     // jsdom no evalúa media queries: en escritorio el botón está oculto por CSS,
     // y un elemento oculto no tiene nombre accesible, así que se busca por su texto.
     const boton = screen.getByText('Menú')
@@ -114,8 +116,8 @@ describe('AppLayout', () => {
     expect(boton).toHaveAttribute('aria-expanded', 'false')
   })
 
-  it('Cerrar sesión borra el token y vuelve al login', () => {
-    entrar('/dashboard')
+  it('Cerrar sesión borra el token y vuelve al login', async () => {
+    await entrar('/dashboard')
 
     fireEvent.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
 

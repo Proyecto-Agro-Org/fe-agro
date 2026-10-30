@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { apiFetch, conParametros } from '../api/client'
+import { obtenerAlertas } from '../api/alertas'
+import { useCampo } from '../app/campo'
 import type { AlertasRespuesta } from '../types/alertas'
 import { useApi } from './useApi'
 
@@ -8,12 +9,13 @@ const REFRESCO_MS = 60_000
 // Cantidad de alertas activas para la insignia del menú.
 // Si el pedido falla devuelve 0: la insignia se oculta y el menú sigue funcionando.
 export function useAlertasActivas(): number {
+  const { campoSeleccionado } = useCampo()
+  const campoId = campoSeleccionado?.campo_id
   const { estado, datos, recargar } = useApi<AlertasRespuesta>(
-    (signal) =>
-      apiFetch<AlertasRespuesta>(conParametros('/alertas', { estado: 'activa', limit: 1 }), {
-        signal,
-      }),
-    [],
+    (signal) => campoId
+      ? obtenerAlertas(campoId, { estado: 'activa', limit: 1 }, signal)
+      : Promise.resolve({ total: 0, limit: 1, alertas: [] }),
+    [campoId],
   )
 
   useEffect(() => {
@@ -21,6 +23,6 @@ export function useAlertasActivas(): number {
     return () => clearInterval(intervalo)
   }, [recargar])
 
-  if (estado === 'error') return 0
+  if (!campoId || estado !== 'exito') return 0
   return datos?.total ?? 0
 }

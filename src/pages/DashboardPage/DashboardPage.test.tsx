@@ -8,10 +8,14 @@ import { server } from '../../mocks/server'
 import { renderConRutas } from '../../test/utils'
 import type { DashboardRespuesta } from '../../types/dashboard'
 import DashboardPage from './DashboardPage'
+import { CampoPrueba } from '../../test/campo'
+import { prepararCampoPrueba } from '../../test/prepararCampo'
+import { obtenerDashboard } from '../../api/dashboard'
 
 function mostrarDashboard() {
+  prepararCampoPrueba()
   return renderConRutas(
-    <Routes>
+    <CampoPrueba><Routes>
       <Route
         path="/dashboard"
         element={
@@ -21,7 +25,7 @@ function mostrarDashboard() {
           </BreadcrumbProvider>
         }
       />
-    </Routes>,
+    </Routes></CampoPrueba>,
     '/dashboard',
   )
 }
@@ -35,15 +39,15 @@ describe('DashboardPage', () => {
     mostrarDashboard()
     const metricas = await esperarMetricas()
 
-    expect(metricas.getByText('Áreas').closest('li')).toHaveTextContent(/^Áreas4$/)
+    expect(metricas.getByText('Áreas').closest('li')).toHaveTextContent(/^Áreas2$/)
     expect(metricas.getByText('Sensores conectados').closest('li')).toHaveTextContent(
-      /^Sensores conectados11 \/ 15$/,
+      /^Sensores conectados7 \/ 8$/,
     )
     expect(metricas.getByText('Sensores desconectados').closest('li')).toHaveTextContent(
-      /^Sensores desconectados4$/,
+      /^Sensores desconectados1$/,
     )
     expect(metricas.getByText('Alertas activas').closest('li')).toHaveTextContent(
-      /^Alertas activas5$/,
+      /^Alertas activas2$/,
     )
     expect(screen.getByText(/Última actualización:/)).toBeInTheDocument()
 
@@ -59,7 +63,7 @@ describe('DashboardPage', () => {
     ).toBeInTheDocument()
 
     const alertas = within(screen.getByRole('region', { name: 'Últimas alertas' }))
-    expect(alertas.getAllByRole('listitem')).toHaveLength(4)
+    expect(alertas.getAllByRole('listitem')).toHaveLength(3)
   })
 
   it('AC2: la tabla distingue áreas con alertas y sin alertas', async () => {
@@ -73,13 +77,7 @@ describe('DashboardPage', () => {
         })
         .closest('tr'),
     ).toHaveTextContent('2 alertas')
-    expect(
-      within(screen.getByRole('region', { name: 'Áreas' }))
-        .getByRole('link', {
-          name: /Área Este/,
-        })
-        .closest('tr'),
-    ).toHaveTextContent('1 alerta')
+    expect(screen.queryByRole('link', { name: /Área Este/ })).not.toBeInTheDocument()
     expect(
       within(screen.getByRole('region', { name: 'Áreas' }))
         .getByRole('link', {
@@ -89,11 +87,26 @@ describe('DashboardPage', () => {
     ).toHaveTextContent('Sin alertas')
   })
 
-  it('limita las últimas alertas a las cuatro más recientes', async () => {
+  it('limita a cuatro las alertas visibles si el contrato entrega cinco', async () => {
+    prepararCampoPrueba()
+    const respuesta = await obtenerDashboard('campo_el_molino')
+    const ultimas_alertas = Array.from({ length: 5 }, (_, indice) => ({
+      ...respuesta.ultimas_alertas[0], alerta_id: `prueba_${indice}`, sensor_nombre: `Sensor de prueba ${indice}`,
+    }))
+    server.use(http.get('*/dashboard/resumen', () => HttpResponse.json({ ...respuesta, ultimas_alertas })))
+    mostrarDashboard()
+    await esperarMetricas()
+    const region = within(screen.getByRole('region', { name: 'Últimas alertas' }))
+    expect(region.getAllByRole('listitem')).toHaveLength(4)
+    expect(region.queryByText('Sensor de prueba 4')).not.toBeInTheDocument()
+  })
+
+  it('muestra las alertas recientes del campo sin incluir las de otro cliente', async () => {
     mostrarDashboard()
     await esperarMetricas()
 
-    expect(screen.queryByText('SN-011')).not.toBeInTheDocument()
+    expect(screen.getByText('SN-011')).toBeInTheDocument()
+    expect(screen.queryByText('SN-008')).not.toBeInTheDocument()
     expect(screen.getByText('SN-015')).toBeInTheDocument()
   })
 
@@ -151,7 +164,7 @@ describe('DashboardPage', () => {
     const enlaces = alertas
       .getAllByRole('link')
       .filter((enlace) => enlace.getAttribute('href')?.startsWith('/sensores/'))
-    expect(enlaces).toHaveLength(4)
+    expect(enlaces).toHaveLength(3)
     expect(enlaces[0]).toHaveAttribute('href', '/sensores/sensor_015')
   })
 })

@@ -9,10 +9,19 @@ import { Skeleton } from '../../components/ui/Skeleton'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { formatFechaHora } from '../../lib/formato'
 import styles from './AreaDetallePage.module.css'
+import { useCampo } from '../../app/campo'
+import { EstadoSinCampo } from '../../components/layout/EstadoSinCampo'
 export default function AreaDetallePage() {
   const { areaId = '' } = useParams()
-  const area = useApi((signal) => obtenerArea(areaId, signal), [areaId])
-  const listado = useApi((signal) => obtenerSensoresDeArea(areaId, signal), [areaId])
+  const { campoSeleccionado } = useCampo()
+  return campoSeleccionado
+    ? <DetalleEnCampo key={`${campoSeleccionado.campo_id}:${areaId}`} campoId={campoSeleccionado.campo_id} areaId={areaId} />
+    : <EstadoSinCampo titulo="Detalle de área" />
+}
+
+function DetalleEnCampo({ campoId, areaId }: { campoId: string; areaId: string }) {
+  const area = useApi((signal) => obtenerArea(areaId, campoId, signal), [areaId, campoId])
+  const listado = useApi((signal) => obtenerSensoresDeArea(areaId, campoId, signal), [areaId, campoId])
   useBreadcrumb([
     { etiqueta: 'Inicio', a: '/dashboard' },
     {

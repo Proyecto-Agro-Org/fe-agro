@@ -1,0 +1,40 @@
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: var(--espacio-2);
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  background: var(--color-superficie-2);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: var(--texto-sm);
+  cursor: pointer;
+}
+
+.boton:hover {
+  background: var(--color-menu-activo);
+}
+
+.boton:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .boton {
+    padding: var(--espacio-2);
+  }
+
+  .boton span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}

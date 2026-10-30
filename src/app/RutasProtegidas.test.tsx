@@ -24,20 +24,20 @@ describe('protección de rutas', () => {
     expect(screen.queryByText('Contenido privado')).not.toBeInTheDocument()
   })
 
-  it('con sesión, entra a la ruta protegida', () => {
-    guardarToken('token-de-prueba')
+  it('con sesión, entra a la ruta protegida', async () => {
+    guardarToken('token-demo')
 
     renderConRutas(rutas, '/dashboard')
 
-    expect(screen.getByText('Contenido privado')).toBeInTheDocument()
+    expect(await screen.findByText('Contenido privado')).toBeInTheDocument()
   })
 
-  it('con sesión, /login redirige al dashboard', () => {
-    guardarToken('token-de-prueba')
+  it('con sesión, /login redirige al dashboard', async () => {
+    guardarToken('token-demo')
 
     renderConRutas(rutas, '/login')
 
-    expect(screen.getByText('Contenido privado')).toBeInTheDocument()
+    expect(await screen.findByText('Contenido privado')).toBeInTheDocument()
     expect(screen.queryByText('Pantalla de login')).not.toBeInTheDocument()
   })
 })

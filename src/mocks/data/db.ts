@@ -1,5 +1,6 @@
 import type { Alerta, EstadoAlerta, TipoAlerta } from '../../types/alertas'
 import type { Estado, Severidad, Ubicacion } from '../../types/comun'
+import type { Area, Campo, Cliente, Sensor, Usuario } from '../../types/dominio'
 
 // Un sensor se considera desconectado si pasaron más de estos minutos sin comunicar.
 // Está en un solo lugar porque la frecuencia real de publicación está pendiente de confirmar.
@@ -25,15 +26,9 @@ export function haceMinutos(minutos: number): string {
   return new Date(ahoraMock() - minutos * 60_000).toISOString()
 }
 
-export interface AreaDb {
-  area_id: string
-  nombre: string
-}
+export type AreaDb = Area
 
-export interface SensorDb {
-  device_id: string
-  nombre: string
-  area_id: string
+export interface SensorDb extends Sensor {
   // null = el sensor nunca comunicó
   minutos_sin_comunicar: number | null
   ubicacion: Ubicacion | null
@@ -49,11 +44,31 @@ export interface AlertaDb {
   creada_hace_min: number
 }
 
+// Entidades ficticias. Solo los mocks de identidad pueden asociarlas con una sesión demo.
+export const CLIENTES: Cliente[] = [
+  { cliente_id: 'cliente_horizonte_verde', nombre: 'Agropecuaria Horizonte Verde' },
+  { cliente_id: 'cliente_los_aromos', nombre: 'Agropecuaria Los Aromos' },
+]
+
+export const CAMPOS: Campo[] = [
+  { campo_id: 'campo_el_molino', nombre: 'El Molino', cliente_id: 'cliente_horizonte_verde' },
+  { campo_id: 'campo_la_esperanza', nombre: 'La Esperanza', cliente_id: 'cliente_horizonte_verde' },
+  { campo_id: 'campo_la_ribera', nombre: 'La Ribera', cliente_id: 'cliente_los_aromos' },
+  { campo_id: 'campo_los_olivos', nombre: 'Los Olivos', cliente_id: 'cliente_los_aromos' },
+]
+
+export const USUARIOS: Usuario[] = [
+  { usuario_id: 'usuario_ana_rios', nombre: 'Ana Ríos', email: 'ana.rios@horizonte-verde.example', cliente_id: 'cliente_horizonte_verde' },
+  { usuario_id: 'usuario_lucia_vega', nombre: 'Lucía Vega', email: 'lucia.vega@los-aromos.example', cliente_id: 'cliente_los_aromos' },
+]
+
+// Los IDs históricos campo_norte/sur/este/oeste identifican ÁREAS, no campos.
+// La Esperanza y Los Olivos quedan sin áreas para cubrir también ese caso.
 export const AREAS: AreaDb[] = [
-  { area_id: 'campo_norte', nombre: 'Área Norte' },
-  { area_id: 'campo_sur', nombre: 'Área Sur' },
-  { area_id: 'campo_este', nombre: 'Área Este' },
-  { area_id: 'campo_oeste', nombre: 'Área Oeste' },
+  { area_id: 'campo_norte', nombre: 'Área Norte', campo_id: 'campo_el_molino' },
+  { area_id: 'campo_sur', nombre: 'Área Sur', campo_id: 'campo_la_ribera' },
+  { area_id: 'campo_este', nombre: 'Área Este', campo_id: 'campo_la_ribera' },
+  { area_id: 'campo_oeste', nombre: 'Área Oeste', campo_id: 'campo_el_molino' },
 ]
 
 export const SENSORES: SensorDb[] = [
@@ -83,6 +98,15 @@ export const ALERTAS: AlertaDb[] = [
   { alerta_id: 'alerta_006', device_id: 'sensor_011', tipo: 'agronomica', severidad: 'media', descripcion: 'Conductividad fuera de rango', estado: 'resuelta', creada_hace_min: 300 },
 ]
 
+// Consultas de datos locales. No implementan autorización ni filtran endpoints.
+export function camposDeCliente(clienteId: Cliente['cliente_id']): Campo[] {
+  return CAMPOS.filter((campo) => campo.cliente_id === clienteId)
+}
+
+export function areasDeCampo(campoId: Campo['campo_id']): AreaDb[] {
+  return AREAS.filter((area) => area.campo_id === campoId)
+}
+
 export function buscarArea(areaId: string): AreaDb | undefined {
   return AREAS.find((area) => area.area_id === areaId)
 }
@@ -91,7 +115,7 @@ export function buscarSensor(deviceId: string): SensorDb | undefined {
   return SENSORES.find((sensor) => sensor.device_id === deviceId)
 }
 
-export function sensoresDeArea(areaId: string): SensorDb[] {
+export function sensoresDeArea(areaId: Area['area_id']): SensorDb[] {
   return SENSORES.filter((sensor) => sensor.area_id === areaId)
 }
 

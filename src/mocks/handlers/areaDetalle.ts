@@ -8,17 +8,22 @@ import {
 } from '../data/db'
 import { escenarioPara } from '../escenarios'
 import type { AreaDetalle, SensoresDeAreaRespuesta } from '../../types/areaDetalle'
+import { campoAutorizado } from '../data/alcance'
 export default [
-  http.get('*/areas/:areaId', async ({ params }) => {
+  http.get('*/areas/:areaId', async ({ params, request }) => {
+    const campo = campoAutorizado(request)
+    if (campo instanceof Response) return campo
     const area = buscarArea(String(params.areaId))
-    if (!area) return HttpResponse.json({ error: 'No encontramos esta área' }, { status: 404 })
+    if (!area || area.campo_id !== campo.campo_id) return HttpResponse.json({ error: 'No encontramos esta área' }, { status: 404 })
     const escenario = await escenarioPara('area')
     if (escenario.tipo === 'respuesta') return escenario.respuesta
     return HttpResponse.json<AreaDetalle>(area)
   }),
-  http.get('*/areas/:areaId/sensores', async ({ params }) => {
+  http.get('*/areas/:areaId/sensores', async ({ params, request }) => {
+    const campo = campoAutorizado(request)
+    if (campo instanceof Response) return campo
     const id = String(params.areaId)
-    if (!buscarArea(id))
+    if (buscarArea(id)?.campo_id !== campo.campo_id)
       return HttpResponse.json({ error: 'No encontramos esta área' }, { status: 404 })
     const escenario = await escenarioPara('area-sensores')
     if (escenario.tipo === 'respuesta') return escenario.respuesta

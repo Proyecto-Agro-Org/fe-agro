@@ -9,18 +9,28 @@ import { Spinner } from '../../components/ui/Spinner'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { tieneUbicacion } from '../../types/mapa'
 import styles from './MapaPage.module.css'
+import { useCampo } from '../../app/campo'
+import { EstadoSinCampo } from '../../components/layout/EstadoSinCampo'
 const MapaSensores = lazy(() => import('./MapaSensores'))
 export default function MapaPage() {
-  const resultado = useApi(obtenerMapa)
+  const { campoSeleccionado } = useCampo()
+  useBreadcrumb([{ etiqueta: 'Inicio', a: '/dashboard' }, { etiqueta: 'Mapa' }])
+  return campoSeleccionado
+    ? <MapaDelCampo key={campoSeleccionado.campo_id} campoId={campoSeleccionado.campo_id} />
+    : <EstadoSinCampo titulo="Mapa de sensores" />
+}
+
+function MapaDelCampo({ campoId }: { campoId: string }) {
+  const resultado = useApi((signal) => obtenerMapa(campoId, signal), [campoId])
   const [area, setArea] = useState('')
   const [estado, setEstado] = useState('')
-  useBreadcrumb([{ etiqueta: 'Inicio', a: '/dashboard' }, { etiqueta: 'Mapa' }])
   const sensores = resultado.estado === 'exito' ? (resultado.datos?.sensores ?? []) : []
   const areas = [
-    ...new Map((resultado.datos?.sensores ?? []).map((s) => [s.area_id, s.area_nombre])).entries(),
+    ...new Map(sensores.map((s) => [s.area_id, s.area_nombre])).entries(),
   ]
+  const areaValida = areas.some(([id]) => id === area) ? area : ''
   const filtrados = sensores.filter(
-    (s) => (!area || s.area_id === area) && (!estado || s.estado === estado),
+    (s) => (!areaValida || s.area_id === areaValida) && (!estado || s.estado === estado),
   )
   const ubicados = filtrados.filter(tieneUbicacion)
   const sinUbicacion = filtrados.filter((s) => !tieneUbicacion(s))
@@ -30,7 +40,7 @@ export default function MapaPage() {
       <div className={styles.filtros}>
         <label>
           Área
-          <select value={area} onChange={(e) => setArea(e.target.value)}>
+          <select value={areaValida} onChange={(e) => setArea(e.target.value)}>
             <option value="">Todas las áreas</option>
             {areas.map(([id, nombre]) => (
               <option key={id} value={id}>
@@ -79,7 +89,7 @@ export default function MapaPage() {
           <div className={styles.superpuesto}>
             <EmptyState
               titulo="No hay sensores geolocalizados para mostrar"
-              descripcion={area || estado ? 'Probá con otros filtros.' : undefined}
+              descripcion={areaValida || estado ? 'Probá con otros filtros.' : undefined}
             />
           </div>
         )}

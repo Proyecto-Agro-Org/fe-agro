@@ -1,6 +1,6 @@
 import { NoEncontrado } from '../../components/ui/NoEncontrado'
 import { lazy, Suspense, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { LIMITE_HISTORICO, obtenerHistorico } from '../../api/historico'
 import { useApi } from '../../hooks/useApi'
 import { useBreadcrumb } from '../../hooks/useBreadcrumb'
@@ -12,6 +12,8 @@ import { formatFechaHora, formatValor } from '../../lib/formato'
 import type { FiltrosHistorico } from '../../types/historico'
 import type { Variable } from '../../types/comun'
 import styles from './HistoricoPage.module.css'
+import { useCampo } from '../../app/campo'
+import { EstadoSinCampo } from '../../components/layout/EstadoSinCampo'
 const GraficoHistorico = lazy(() => import('./GraficoHistorico'))
 const VARIABLES: { valor: Variable; nombre: string }[] = [
   { valor: 'humedad', nombre: 'Humedad' },
@@ -38,24 +40,25 @@ function convertir(f: FiltrosHistorico): FiltrosHistorico {
 }
 export default function HistoricoPage() {
   const { deviceId = '' } = useParams()
-  const ubicacion = useLocation()
-  const previo = (
-    ubicacion.state as {
-      sensor?: { deviceId: string; nombre: string; area_id: string; area_nombre: string }
-    } | null
-  )?.sensor
-  const sensorPrevio = previo?.deviceId === deviceId ? previo : undefined
+  const { campoSeleccionado } = useCampo()
+  return campoSeleccionado
+    ? <HistoricoEnCampo key={`${campoSeleccionado.campo_id}:${deviceId}`} deviceId={deviceId} campoId={campoSeleccionado.campo_id} />
+    : <EstadoSinCampo titulo="Históricos" />
+}
+
+function HistoricoEnCampo({ deviceId, campoId }: { deviceId: string; campoId: string }) {
   const [formulario, setFormulario] = useState(iniciales)
   const [aplicado, setAplicado] = useState(() => convertir(formulario))
   const [validacion, setValidacion] = useState('')
   const resultado = useApi(
-    (signal) => obtenerHistorico(deviceId, aplicado, signal),
-    [deviceId, aplicado],
+    (signal) => obtenerHistorico(deviceId, campoId, aplicado, signal),
+    [deviceId, campoId, aplicado],
   )
   const datos = resultado.datos
-  const nombreSensor = datos?.nombre ?? sensorPrevio?.nombre
-  const areaId = datos?.area_id ?? sensorPrevio?.area_id
-  const areaNombre = datos?.area_nombre ?? sensorPrevio?.area_nombre
+  // La identidad visible proviene de una respuesta validada, no del estado de navegación.
+  const nombreSensor = datos?.nombre
+  const areaId = datos?.area_id
+  const areaNombre = datos?.area_nombre
   const nombre = VARIABLES.find((v) => v.valor === aplicado.variable)!.nombre
   useBreadcrumb([
     { etiqueta: 'Inicio', a: '/dashboard' },
@@ -83,7 +86,7 @@ export default function HistoricoPage() {
     if (JSON.stringify(siguiente) === JSON.stringify(aplicado)) resultado.recargar()
     else setAplicado(siguiente)
   }
-  if (resultado.error?.estado === 404) return <NoEncontrado />
+  if (resultado.error?.estado === 403 || resultado.error?.estado === 404) return <NoEncontrado />
   return (
     <section className={styles.pagina}>
       <header className={styles.encabezado}>

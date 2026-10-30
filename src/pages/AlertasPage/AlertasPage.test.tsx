@@ -7,6 +7,8 @@ import { server } from '../../mocks/server'
 import { renderConRutas } from '../../test/utils'
 import type { AlertasRespuesta } from '../../types/alertas'
 import AlertasPage from './AlertasPage'
+import { CampoPrueba } from '../../test/campo'
+import { prepararCampoPrueba } from '../../test/prepararCampo'
 
 function Destino() {
   const { deviceId } = useParams()
@@ -14,13 +16,14 @@ function Destino() {
 }
 
 function mostrarAlertas() {
+  prepararCampoPrueba()
   return renderConRutas(
-    <BreadcrumbProvider>
+    <CampoPrueba><BreadcrumbProvider>
       <Routes>
         <Route path="/alertas" element={<AlertasPage />} />
         <Route path="/sensores/:deviceId" element={<Destino />} />
       </Routes>
-    </BreadcrumbProvider>,
+    </BreadcrumbProvider></CampoPrueba>,
     '/alertas',
   )
 }
@@ -40,8 +43,8 @@ describe('AlertasPage', () => {
 
     await screen.findAllByRole('link')
 
-    expect(sensoresMostrados()).toEqual(['SN-015', 'SN-008', 'SN-005', 'SN-014', 'SN-007'])
-    expect(screen.queryByText('5 alertas activas')).not.toBeInTheDocument()
+    expect(sensoresMostrados()).toEqual(['SN-015', 'SN-014'])
+    expect(screen.queryByText('2 alertas activas')).not.toBeInTheDocument()
     expect(screen.getAllByRole('link')[0].closest('tr')).toHaveTextContent('Alta')
     expect(screen.getAllByRole('link')[0].closest('tr')).toHaveTextContent(
       'SN-015Área NorteTécnica',
@@ -54,7 +57,7 @@ describe('AlertasPage', () => {
 
     filtrar('Severidad', 'alta')
 
-    await waitFor(() => expect(sensoresMostrados()).toEqual(['SN-015', 'SN-008', 'SN-005']))
+    await waitFor(() => expect(sensoresMostrados()).toEqual(['SN-015']))
   })
 
   it('AC1: filtra por tipo', async () => {
@@ -63,7 +66,7 @@ describe('AlertasPage', () => {
 
     filtrar('Tipo', 'agronomica')
 
-    await waitFor(() => expect(sensoresMostrados()).toEqual(['SN-014', 'SN-007']))
+    await waitFor(() => expect(sensoresMostrados()).toEqual(['SN-014']))
   })
 
   it('AC1: filtra por área', async () => {
@@ -88,7 +91,7 @@ describe('AlertasPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
 
-    await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(5))
+    await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(2))
     expect(screen.getByLabelText('Área')).toHaveValue('')
   })
 
@@ -98,7 +101,7 @@ describe('AlertasPage', () => {
 
     await screen.findAllByRole('link')
 
-    expect(sensoresMostrados()).toHaveLength(5)
+    expect(sensoresMostrados()).toHaveLength(2)
     expect(screen.getByLabelText('Área')).toHaveValue('')
     expect(screen.queryByRole('option', { name: 'Área Norte' })).not.toBeInTheDocument()
   })
@@ -114,7 +117,7 @@ describe('AlertasPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
 
-    await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(5))
+    await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(2))
     expect(screen.getByLabelText('Severidad')).toHaveValue('')
     expect(screen.getByLabelText('Tipo')).toHaveValue('')
   })
@@ -163,8 +166,8 @@ describe('AlertasPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
 
-    // Con el filtro todavía aplicado, vuelven solo las 3 alertas altas y no las 5.
-    await waitFor(() => expect(sensoresMostrados()).toEqual(['SN-015', 'SN-008', 'SN-005']))
+    // El filtro se conserva y devuelve solo la alerta alta del campo.
+    await waitFor(() => expect(sensoresMostrados()).toEqual(['SN-015']))
   })
 
   it('si hay más alertas que las que se muestran, el contador lo aclara', async () => {

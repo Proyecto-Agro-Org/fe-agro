@@ -1,6 +1,6 @@
 import type { AreasRespuesta } from '../types/areas'
-import { apiFetch } from './client'
+import { apiFetch, conParametros } from './client'
 
-export function obtenerAreas(signal?: AbortSignal): Promise<AreasRespuesta> {
-  return apiFetch<AreasRespuesta>('/areas', { signal })
+export function obtenerAreas(campoId: string, signal?: AbortSignal): Promise<AreasRespuesta> {
+  return apiFetch<AreasRespuesta>(conParametros('/areas', { campo_id: campoId }), { signal })
 }

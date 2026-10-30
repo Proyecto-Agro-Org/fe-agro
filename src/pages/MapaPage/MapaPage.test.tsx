@@ -6,6 +6,9 @@ import { BreadcrumbProvider } from '../../components/layout/BreadcrumbProvider'
 import { server } from '../../mocks/server'
 import { tieneUbicacion, type SensorMapa } from '../../types/mapa'
 import MapaPage from './MapaPage'
+import { CampoPrueba } from '../../test/campo'
+import { prepararCampoPrueba } from '../../test/prepararCampo'
+import { obtenerMapa } from '../../api/mapa'
 // La integración real Leaflet/popup se verifica en navegador. Aquí se inspecciona
 // qué sensores recibe el mapa, sin depender del motor de layout de jsdom.
 vi.mock('./MapaSensores', () => ({
@@ -18,22 +21,24 @@ vi.mock('./MapaSensores', () => ({
   ),
 }))
 function montar() {
+  prepararCampoPrueba()
   render(
-    <MemoryRouter initialEntries={['/mapa']}>
+    <CampoPrueba><MemoryRouter initialEntries={['/mapa']}>
       <BreadcrumbProvider>
         <Routes>
           <Route path="/mapa" element={<MapaPage />} />
           <Route path="/sensores/:deviceId" element={<h1>Detalle del sensor</h1>} />
         </Routes>
       </BreadcrumbProvider>
-    </MemoryRouter>,
+    </MemoryRouter></CampoPrueba>,
   )
 }
 describe('mapa de sensores', () => {
-  it('ubica 14 sensores y lista aparte el que no tiene coordenadas', async () => {
+  it('ubica los 7 sensores del campo con coordenadas y lista aparte el restante', async () => {
     montar()
     expect(await screen.findByRole('heading', { name: 'Sensores sin ubicación' })).toBeTruthy()
-    expect(screen.queryByText('14 sensores en el mapa · 1 sin ubicación')).toBeNull()
+    expect(screen.getAllByText(/^Pin /)).toHaveLength(7)
+    expect(screen.queryByText('Pin SN-005 desconectado')).toBeNull()
     expect(screen.getByText('Pin SN-015 desconectado')).toBeTruthy()
     expect(screen.getByText('Pin SN-014 conectado')).toBeTruthy()
     fireEvent.click(screen.getByRole('link', { name: 'SN-002 · Área Oeste' }))
@@ -73,6 +78,18 @@ describe('mapa de sensores', () => {
     montar()
     expect(await screen.findByText('No hay sensores geolocalizados para mostrar')).toBeTruthy()
     expect(screen.queryByText(/Pin SN/)).toBeNull()
+  })
+  it('lista los sensores propios sin inventar marcadores cuando faltan todas las ubicaciones', async () => {
+    prepararCampoPrueba()
+    const mapa = await obtenerMapa('campo_el_molino', new AbortController().signal)
+    server.use(http.get('*/mapa/sensores', () => HttpResponse.json({
+      sensores: mapa.sensores.map((sensor) => ({ ...sensor, ubicacion: null })),
+    })))
+    montar()
+    await screen.findByText('No hay sensores geolocalizados para mostrar')
+    expect(screen.getByRole('heading', { name: 'Sensores sin ubicación' })).toBeInTheDocument()
+    expect(screen.getAllByRole('link')).toHaveLength(8)
+    expect(screen.queryByText(/Pin SN/)).not.toBeInTheDocument()
   })
   it('rechaza coordenadas inválidas y conserva ceros válidos', () => {
     const sensor = { ubicacion: { lat: 0, lon: 0 } } as SensorMapa
