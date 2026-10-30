@@ -10,6 +10,8 @@ import { StatusBadge } from '../../components/ui/StatusBadge'
 import { formatFechaHora, formatRelativo, formatValor } from '../../lib/formato'
 import type { Variable } from '../../types/comun'
 import styles from './SensorDetallePage.module.css'
+import { useCampo } from '../../app/campo'
+import { EstadoSinCampo } from '../../components/layout/EstadoSinCampo'
 const VARIABLES: { clave: Variable; nombre: string }[] = [
   { clave: 'humedad', nombre: 'Humedad' },
   { clave: 'temperatura', nombre: 'Temperatura' },
@@ -20,7 +22,14 @@ const VARIABLES: { clave: Variable; nombre: string }[] = [
 ]
 export default function SensorDetallePage() {
   const { deviceId = '' } = useParams()
-  const resultado = useApi((signal) => obtenerSensor(deviceId, signal), [deviceId])
+  const { campoSeleccionado } = useCampo()
+  return campoSeleccionado
+    ? <SensorEnCampo key={`${campoSeleccionado.campo_id}:${deviceId}`} deviceId={deviceId} campoId={campoSeleccionado.campo_id} />
+    : <EstadoSinCampo titulo="Detalle del sensor" />
+}
+
+function SensorEnCampo({ deviceId, campoId }: { deviceId: string; campoId: string }) {
+  const resultado = useApi((signal) => obtenerSensor(deviceId, campoId, signal), [deviceId, campoId])
   const sensor = resultado.datos
   useBreadcrumb([
     { etiqueta: 'Inicio', a: '/dashboard' },
@@ -34,7 +43,7 @@ export default function SensorDetallePage() {
         (resultado.estado === 'error' ? 'Sensor no disponible' : undefined),
     },
   ])
-  if (resultado.error?.estado === 404) return <NoEncontrado />
+  if (resultado.error?.estado === 403 || resultado.error?.estado === 404) return <NoEncontrado />
   return (
     <section
       className={styles.pagina}
@@ -69,9 +78,9 @@ export default function SensorDetallePage() {
               )}
             </dl>
           </header>
-          <p className={styles.fecha}>
+          <div className={styles.fecha}>
             <Skeleton ancho="16rem" alto="1.5em" />
-          </p>
+          </div>
           <dl className={styles.medidas}>
             {VARIABLES.map((v) => (
               <div className={styles.tarjeta} key={v.clave}>

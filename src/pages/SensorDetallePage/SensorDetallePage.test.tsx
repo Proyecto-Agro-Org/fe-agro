@@ -5,16 +5,20 @@ import { describe, expect, it } from 'vitest'
 import { BreadcrumbProvider } from '../../components/layout/BreadcrumbProvider'
 import { server } from '../../mocks/server'
 import SensorDetallePage from './SensorDetallePage'
+import { CampoPrueba } from '../../test/campo'
+import { prepararCampoPrueba } from '../../test/prepararCampo'
 function montar(id = 'sensor_014') {
+  const campoId = ['sensor_005', 'sensor_010'].includes(id) ? 'campo_la_ribera' : 'campo_el_molino'
+  prepararCampoPrueba(campoId)
   render(
-    <MemoryRouter initialEntries={[`/sensores/${id}`]}>
+    <CampoPrueba campoId={campoId}><MemoryRouter initialEntries={[`/sensores/${id}`]}>
       <BreadcrumbProvider>
         <Routes>
           <Route path="/sensores/:deviceId" element={<SensorDetallePage />} />
           <Route path="/sensores/:deviceId/historico" element={<h1>Históricos</h1>} />
         </Routes>
       </BreadcrumbProvider>
-    </MemoryRouter>,
+    </MemoryRouter></CampoPrueba>,
   )
 }
 describe('detalle del sensor', () => {

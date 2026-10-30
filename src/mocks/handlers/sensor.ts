@@ -1,12 +1,13 @@
 import { http, HttpResponse } from 'msw'
-import { buscarArea, buscarSensor, estadoSensor, ultimaComunicacion } from '../data/db'
+import { buscarArea, estadoSensor, ultimaComunicacion } from '../data/db'
+import { sensorAutorizado } from '../data/alcance'
 import { generarMedicion } from '../data/generadores'
 import { escenarioPara } from '../escenarios'
 import type { SensorDetalle } from '../../types/sensor'
 export default [
-  http.get('*/sensores/:deviceId', async ({ params }) => {
-    const sensor = buscarSensor(String(params.deviceId))
-    if (!sensor) return HttpResponse.json({ error: 'No encontramos este sensor' }, { status: 404 })
+  http.get('*/sensores/:deviceId', async ({ params, request }) => {
+    const sensor = sensorAutorizado(request, String(params.deviceId))
+    if (sensor instanceof Response) return sensor
     const escenario = await escenarioPara('sensor')
     if (escenario.tipo === 'respuesta') return escenario.respuesta
     return HttpResponse.json<SensorDetalle>({

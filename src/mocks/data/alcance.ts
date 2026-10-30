@@ -1,6 +1,6 @@
 import { HttpResponse } from 'msw'
 import type { Campo } from '../../types/dominio'
-import { CAMPOS } from './db'
+import { CAMPOS, buscarArea, buscarSensor, type SensorDb } from './db'
 import { identidadPorToken } from './identidades'
 
 // Validación del mock, independiente de preferencias o parámetros de cliente.
@@ -14,4 +14,14 @@ export function campoAutorizado(request: Request): Campo | Response {
   }
   const campo = CAMPOS.find((campo) => campo.campo_id === ids[0] && campo.cliente_id === identidad.cliente.cliente_id)
   return campo ?? HttpResponse.json({ error: 'Campo no disponible' }, { status: 404 })
+}
+
+export function sensorAutorizado(request: Request, deviceId: string): SensorDb | Response {
+  const campo = campoAutorizado(request)
+  if (campo instanceof Response) return campo
+  const sensor = buscarSensor(deviceId)
+  if (!sensor || buscarArea(sensor.area_id)?.campo_id !== campo.campo_id) {
+    return HttpResponse.json({ error: 'No encontramos este sensor' }, { status: 404 })
+  }
+  return sensor
 }
