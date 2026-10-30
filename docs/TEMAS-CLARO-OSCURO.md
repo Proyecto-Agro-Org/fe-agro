@@ -8,8 +8,8 @@ sincronizar el botón con el atributo `data-tema` del elemento `<html>`.
 No se agrega un provider de autenticación ni se modifica el contexto de sesión,
 cliente o campo. Cambiar el tema no remonta las pantallas ni consulta las APIs.
 
-El botón vive en el encabezado, usa sol para ofrecer el tema claro y luna para
-ofrecer el oscuro, e indica el tema vigente. Su nombre accesible describe la acción
+El botón vive en el encabezado y representa el tema vigente: sol junto a “Tema
+claro” y luna junto a “Tema oscuro”. Su nombre accesible describe la acción
 (“Cambiar a tema claro/oscuro”). Es un botón nativo operable con Enter y Espacio,
 mantiene el foco y tiene un área mínima de 44 × 44 px. En móvil queda visible el
 ícono con el mismo nombre accesible; el texto visual se oculta para conservar
