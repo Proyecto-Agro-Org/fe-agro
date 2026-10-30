@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../app/auth'
+import { CampoProvider } from '../../app/CampoProvider'
 import { useAlertasActivas } from '../../hooks/useAlertasActivas'
 import { Breadcrumb } from './Breadcrumb'
 import { BreadcrumbProvider } from './BreadcrumbProvider'
+import { SelectorCampo } from './SelectorCampo'
 import estilos from './AppLayout.module.css'
 
 interface EnlaceMenu {
@@ -26,6 +28,10 @@ function estaActivo(pathname: string, prefijos: string[]): boolean {
 }
 
 export default function AppLayout() {
+  return <CampoProvider><ContenidoLayout /></CampoProvider>
+}
+
+function ContenidoLayout() {
   const { cerrarSesion, usuario, cliente } = useAuth()
   const { pathname } = useLocation()
   const alertasActivas = useAlertasActivas()
@@ -45,6 +51,7 @@ export default function AppLayout() {
               <span>{cliente.nombre}</span>
             </div>
           )}
+          <SelectorCampo />
           <button
             type="button"
             className={estilos.botonMenu}
