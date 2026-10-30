@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { obtenerAlertas } from '../../api/alertas'
-import { obtenerAreas } from '../../api/areas'
+import { obtenerAreasParaAlertas } from '../../api/areas'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ErrorBlock } from '../../components/ui/ErrorBlock'
 import { SeverityBadge } from '../../components/ui/SeverityBadge'
@@ -160,7 +160,7 @@ export default function AlertasPage() {
     datos: areas,
     estado: estadoAreas,
     recargar: recargarAreas,
-  } = useApi<AreasRespuesta>((signal) => obtenerAreas(signal), [])
+  } = useApi<AreasRespuesta>((signal) => obtenerAreasParaAlertas(signal), [])
 
   const { estado, datos, recargar } = useApi<AlertasRespuesta>(
     (signal) =>

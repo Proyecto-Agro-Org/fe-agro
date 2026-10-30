@@ -1,17 +1,21 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'
-import { delay, http, HttpResponse } from 'msw'
+import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { BreadcrumbProvider } from '../../components/layout/BreadcrumbProvider'
 import { server } from '../../mocks/server'
 import AreaDetallePage from './AreaDetallePage'
+import { CampoPrueba } from '../../test/campo'
+import { prepararCampoPrueba } from '../../test/prepararCampo'
 function Cambiar() {
   const ir = useNavigate()
   return <button onClick={() => ir('/areas/campo_oeste')}>Cambiar área</button>
 }
 function montar(id = 'campo_norte') {
+  const campoId = id === 'campo_sur' ? 'campo_la_ribera' : 'campo_el_molino'
+  prepararCampoPrueba(campoId)
   return render(
-    <MemoryRouter initialEntries={[`/areas/${id}`]}>
+    <CampoPrueba campoId={campoId}><MemoryRouter initialEntries={[`/areas/${id}`]}>
       <BreadcrumbProvider>
         <Cambiar />
         <Routes>
@@ -19,7 +23,7 @@ function montar(id = 'campo_norte') {
           <Route path="/sensores/:deviceId" element={<h1>Detalle del sensor</h1>} />
         </Routes>
       </BreadcrumbProvider>
-    </MemoryRouter>,
+    </MemoryRouter></CampoPrueba>,
   )
 }
 describe('detalle de área', () => {
@@ -34,15 +38,18 @@ describe('detalle de área', () => {
     expect(await screen.findByRole('heading', { name: 'Detalle del sensor' })).toBeTruthy()
   })
   it('muestra el encabezado sin esperar a la lista', async () => {
+    let liberar!: () => void
+    const pendiente = new Promise<void>((resolver) => { liberar = resolver })
     server.use(
       http.get('*/api/v1/areas/:areaId/sensores', async () => {
-        await delay(150)
+        await pendiente
         return HttpResponse.json({ sensores: [] })
       }),
     )
     montar()
     expect(await screen.findByRole('heading', { name: 'Área Norte · Sensores' })).toBeTruthy()
     expect(screen.getByRole('status', { name: 'Cargando sensores' })).toBeTruthy()
+    liberar()
     expect(await screen.findByText('Todavía no hay sensores instalados en esta área')).toBeTruthy()
   })
   it('conserva el encabezado cuando falla la lista y permite reintentar', async () => {
@@ -56,7 +63,7 @@ describe('detalle de área', () => {
     )
     montar()
     expect(await screen.findByRole('alert')).toHaveTextContent('No se pudieron cargar los sensores')
-    expect(screen.getByRole('heading', { name: 'Área Norte · Sensores' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Área Norte · Sensores' })).toBeTruthy()
     falla = false
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
     expect(await screen.findByText('Todavía no hay sensores instalados en esta área')).toBeTruthy()

@@ -2,21 +2,27 @@ import { describe, expect, it } from 'vitest'
 import { apiFetch } from '../api/client'
 import type { AreasRespuesta } from '../types/areas'
 import { ahoraMock } from './data/db'
+import { guardarToken } from '../api/sesion'
+
+function consultarAreas(token = 'token-demo', campo = 'campo_el_molino') {
+  guardarToken(token)
+  return apiFetch<AreasRespuesta>(`/areas?campo_id=${campo}`)
+}
 
 describe('GET /areas (mock)', () => {
-  it('devuelve las cuatro áreas', async () => {
-    const respuesta = await apiFetch<AreasRespuesta>('/areas')
+  it('devuelve las áreas del campo seleccionado', async () => {
+    const respuesta = await consultarAreas()
 
     expect(respuesta.areas.map((area) => area.area_id)).toEqual([
       'campo_norte',
-      'campo_sur',
-      'campo_este',
       'campo_oeste',
     ])
   })
 
   it('cuenta sensores, conectados, desconectados y alertas activas de cada área', async () => {
-    const { areas } = await apiFetch<AreasRespuesta>('/areas')
+    const ana = await consultarAreas()
+    const lucia = await consultarAreas('token-demo-lucia', 'campo_la_ribera')
+    const areas = [...ana.areas, ...lucia.areas]
     const porId = (id: string) => areas.find((area) => area.area_id === id)
 
     expect(porId('campo_norte')).toMatchObject({
@@ -46,7 +52,9 @@ describe('GET /areas (mock)', () => {
   })
 
   it('la última actualización de cada área es la comunicación más reciente de sus sensores', async () => {
-    const { areas } = await apiFetch<AreasRespuesta>('/areas')
+    const ana = await consultarAreas()
+    const lucia = await consultarAreas('token-demo-lucia', 'campo_la_ribera')
+    const areas = [...ana.areas, ...lucia.areas]
     const minutosAtras = (id: string) => {
       const fecha = areas.find((area) => area.area_id === id)?.ultima_actualizacion
       return fecha ? (ahoraMock() - Date.parse(fecha)) / 60_000 : null

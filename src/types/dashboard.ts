@@ -20,5 +20,5 @@ export interface DashboardRespuesta {
   resumen: ResumenGeneral
   areas: AreaDashboard[]
   ultimas_alertas: Alerta[]
-  ultima_actualizacion: string
+  ultima_actualizacion: string | null
 }

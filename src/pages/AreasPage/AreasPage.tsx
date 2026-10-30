@@ -8,6 +8,8 @@ import { useBreadcrumb } from '../../hooks/useBreadcrumb'
 import { cantidad, formatFechaHora } from '../../lib/formato'
 import type { AreaResumen, AreasRespuesta } from '../../types/areas'
 import styles from './AreasPage.module.css'
+import { useCampo } from '../../app/campo'
+import { EstadoSinCampo } from '../../components/layout/EstadoSinCampo'
 
 function TarjetaArea({ area }: { area?: AreaResumen }) {
   const conAlerta = (area?.alertas_activas ?? 0) > 0
@@ -97,11 +99,18 @@ function CargandoAreas() {
 }
 
 export default function AreasPage() {
-  const { estado, datos, recargar, desactualizado } = useApi<AreasRespuesta>(
-    (signal) => obtenerAreas(signal),
-    [],
-  )
+  const { campoSeleccionado } = useCampo()
   useBreadcrumb([{ etiqueta: 'Inicio', a: '/dashboard' }, { etiqueta: 'Áreas' }])
+  return campoSeleccionado
+    ? <AreasDeCampo key={campoSeleccionado.campo_id} campoId={campoSeleccionado.campo_id} />
+    : <EstadoSinCampo titulo="Áreas" />
+}
+
+function AreasDeCampo({ campoId }: { campoId: string }) {
+  const { estado, datos, recargar, desactualizado } = useApi<AreasRespuesta>(
+    (signal) => obtenerAreas(campoId, signal),
+    [campoId],
+  )
 
   let contenido
   if (datos === null) {
