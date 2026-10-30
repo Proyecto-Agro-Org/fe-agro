@@ -7,6 +7,16 @@ export const EMAIL_DEMO = 'demo@agro.com'
 export const PASSWORD_DEMO = 'demo1234'
 
 export default [
+  http.post('*/auth/google-demo', async () => {
+    const resultado = await escenarioPara('login')
+    if (resultado.tipo === 'respuesta') return resultado.respuesta
+
+    const respuesta: LoginRespuesta = {
+      token: 'token-demo',
+      usuario: { nombre: 'Usuaria Demo', email: EMAIL_DEMO },
+    }
+    return HttpResponse.json(respuesta)
+  }),
   http.post('*/auth/login', async ({ request }) => {
     // "Vacío" no aplica al login: ese escenario se trata como uno normal.
     const resultado = await escenarioPara('login')

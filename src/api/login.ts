@@ -11,3 +11,14 @@ export function login(pedido: LoginPedido, signal?: AbortSignal): Promise<LoginR
     signal,
   })
 }
+
+// Endpoint exclusivo de MSW: nunca debe solicitarse en el modo sin mocks.
+export async function loginGoogleDemo(): Promise<LoginRespuesta> {
+  if (import.meta.env.VITE_USE_MOCKS !== 'true') {
+    throw new Error('El acceso con Google todavía no está disponible.')
+  }
+  return apiFetch<LoginRespuesta>('/auth/google-demo', {
+    method: 'POST',
+    sinSesion: true,
+  })
+}

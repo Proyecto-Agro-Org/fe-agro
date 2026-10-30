@@ -1,7 +1,7 @@
-import { act, fireEvent, screen } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { avisarSesionExpirada, leerToken } from '../../api/sesion'
 import { RutaProtegida, RutaSoloPublica } from '../../app/RutasProtegidas'
 import { EMAIL_DEMO, PASSWORD_DEMO } from '../../mocks/handlers/login'
@@ -132,5 +132,129 @@ describe('LoginPage', () => {
     act(() => avisarSesionExpirada())
 
     expect(screen.getByText('Tu sesión expiró. Volvé a iniciar sesión.')).toBeInTheDocument()
+  })
+})
+
+describe('LoginPage: Google simulado', () => {
+  beforeEach(() => vi.stubEnv('VITE_USE_MOCKS', 'true'))
+  afterEach(() => vi.unstubAllEnvs())
+
+  function continuarConGoogle() {
+    return screen.getByRole('button', { name: /Continuar con Google/ })
+  }
+
+  it('ingresa sin completar credenciales, guarda la sesión demo y redirige al dashboard', async () => {
+    renderConRutas(rutas, '/login')
+
+    expect(screen.getByText('O continuá con')).toBeInTheDocument()
+    expect(screen.getByText('Acceso simulado · Demo')).toBeInTheDocument()
+    expect(continuarConGoogle()).toBeEnabled()
+    fireEvent.click(continuarConGoogle())
+
+    expect(await screen.findByText('Contenido del dashboard')).toBeInTheDocument()
+    expect(leerToken()).toBe('token-demo')
+  })
+
+  it.each(['false', undefined, 'TRUE'])('sin VITE_USE_MOCKS=true (%s) no permite el acceso Google', (valor) => {
+    vi.stubEnv('VITE_USE_MOCKS', valor)
+    renderConRutas(rutas, '/login')
+
+    expect(continuarConGoogle()).toBeDisabled()
+    expect(screen.getByText('Próximamente · No disponible')).toBeInTheDocument()
+    fireEvent.click(continuarConGoogle())
+    expect(leerToken()).toBeNull()
+    expect(screen.queryByText('Contenido del dashboard')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Ingresar' })).toBeEnabled()
+  })
+
+  it('muestra carga y bloquea dobles clics y el envío tradicional durante el ingreso Google', async () => {
+    let pedidosGoogle = 0
+    let pedidosPassword = 0
+    let liberar!: () => void
+    const pendiente = new Promise<void>((resolver) => { liberar = resolver })
+    server.use(
+      http.post('*/auth/google-demo', async () => {
+        pedidosGoogle += 1
+        await pendiente
+        return HttpResponse.json({ token: 'token-demo' })
+      }),
+      http.post('*/auth/login', () => {
+        pedidosPassword += 1
+        return HttpResponse.json({ token: 'token-demo' })
+      }),
+    )
+    renderConRutas(rutas, '/login')
+    completar(EMAIL_DEMO, PASSWORD_DEMO)
+    const boton = continuarConGoogle()
+    fireEvent.click(boton)
+    fireEvent.click(boton)
+    const ingresarBoton = screen.getByRole('button', { name: 'Ingresar' })
+    expect(ingresarBoton).toBeDisabled()
+    fireEvent.submit(ingresarBoton.closest('form')!)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Ingresando con Google…')
+    expect(screen.getByRole('button', { name: /Ingresando con Google/ })).toBeDisabled()
+    await waitFor(() => expect(pedidosGoogle).toBe(1))
+    liberar()
+
+    expect(await screen.findByText('Contenido del dashboard')).toBeInTheDocument()
+    expect(pedidosGoogle).toBe(1)
+    expect(pedidosPassword).toBe(0)
+  })
+
+  it.each(['servidor', 'conexion', '401'])('maneja error de %s y permite reintentar el ingreso Google', async (tipo) => {
+    let intentos = 0
+    server.use(
+      http.post('*/auth/google-demo', () => {
+        intentos += 1
+        if (intentos > 1) return HttpResponse.json({ token: 'token-demo' })
+        return tipo === 'conexion'
+          ? HttpResponse.error()
+          : HttpResponse.json({ error: 'Error simulado' }, { status: tipo === '401' ? 401 : 500 })
+      }),
+    )
+    renderConRutas(rutas, '/login')
+    completar(EMAIL_DEMO, PASSWORD_DEMO)
+    fireEvent.click(continuarConGoogle())
+
+    expect(await screen.findByText('No se pudo completar el acceso simulado con Google. Intentá nuevamente.')).toBeInTheDocument()
+    expect(leerToken()).toBeNull()
+    expect(screen.getByLabelText('Contraseña')).toHaveValue(PASSWORD_DEMO)
+    expect(screen.queryByText('Usuario o contraseña incorrectos')).not.toBeInTheDocument()
+    expect(screen.queryByText('Tu sesión expiró. Volvé a iniciar sesión.')).not.toBeInTheDocument()
+    expect(continuarConGoogle()).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Ingresar' })).toBeEnabled()
+    const reintentar = screen.getByRole('button', { name: 'Reintentar' })
+    fireEvent.click(reintentar)
+    fireEvent.click(reintentar)
+
+    expect(await screen.findByText('Contenido del dashboard')).toBeInTheDocument()
+    expect(intentos).toBe(2)
+    expect(leerToken()).toBe('token-demo')
+  })
+
+  it('mantiene el ingreso tradicional y bloquea Google mientras se envían credenciales', async () => {
+    renderConRutas(rutas, '/login')
+    completar(EMAIL_DEMO, PASSWORD_DEMO)
+    ingresar()
+
+    expect(continuarConGoogle()).toBeDisabled()
+    fireEvent.click(continuarConGoogle())
+    expect(screen.getByRole('button', { name: 'Ingresando…' })).toBeDisabled()
+    expect(await screen.findByText('Contenido del dashboard')).toBeInTheDocument()
+    expect(leerToken()).toBe('token-demo')
+  })
+
+  it('permite el login tradicional después de un fallo de Google', async () => {
+    server.use(http.post('*/auth/google-demo', () => HttpResponse.error()))
+    renderConRutas(rutas, '/login')
+    fireEvent.click(continuarConGoogle())
+    await screen.findByText('No se pudo completar el acceso simulado con Google. Intentá nuevamente.')
+
+    completar(EMAIL_DEMO, PASSWORD_DEMO)
+    ingresar()
+
+    expect(await screen.findByText('Contenido del dashboard')).toBeInTheDocument()
+    expect(leerToken()).toBe('token-demo')
   })
 })

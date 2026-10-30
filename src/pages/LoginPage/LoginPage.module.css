@@ -130,6 +130,15 @@
   background: var(--color-fondo);
   color: var(--color-texto-suave);
   font: inherit;
+  cursor: pointer;
+}
+
+.botonGoogle:hover:not(:disabled) {
+  background: var(--color-superficie-2);
+  color: var(--color-texto);
+}
+
+.botonGoogle:disabled {
   cursor: not-allowed;
 }
 
