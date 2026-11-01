@@ -33,6 +33,14 @@
   display: none;
 }
 
+.selectores {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espacio-3);
+  flex: 0 1 380px;
+  min-width: 0;
+}
+
 .identidad {
   display: flex;
   flex-direction: column;
@@ -212,6 +220,10 @@
 }
 
 @media (max-width: 767px) {
+  .selectores {
+    display: contents;
+  }
+
   .marca {
     display: none;
   }
