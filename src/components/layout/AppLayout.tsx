@@ -52,8 +52,10 @@ function ContenidoLayout() {
               <span>{cliente.nombre}</span>
             </div>
           )}
-          <SelectorCampo />
-          <SelectorTema />
+          <div className={estilos.selectores}>
+            <SelectorCampo />
+            <SelectorTema />
+          </div>
           <button
             type="button"
             className={estilos.botonMenu}
